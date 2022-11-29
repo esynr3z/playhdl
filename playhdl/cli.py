@@ -2,7 +2,8 @@ import argparse
 
 from . import log
 from . import utils
-from . import core
+from . import tools
+from . import settings
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -18,6 +19,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     log.debug(f"Execute 'cmd_setup' with {args}")
+    settings.Settings().setup()
 
 
 def parse_args():

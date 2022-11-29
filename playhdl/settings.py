@@ -1,56 +1,23 @@
 from __future__ import annotations
-from typing import Literal, Dict, List, Callable, NoReturn, Optional, Union, Type
+import typing
+from typing import Literal, Dict
 from pathlib import Path
-from enum import Enum
-import subprocess
-import io
-from dataclasses import dataclass, field
+import dataclasses
+from dataclasses import dataclass
+import json
 
-import pydantic
-import toml
-
-from . import utils
 from . import log
-
-ToolKind = Literal[
-    "modelsim",
-    "xcelium",
-    "verilator",
-    "icarus",
-    "vcs",
-    "vivado",
-]
-
-DesignMode = Literal[
-    "verilog",
-    "systemverilog",
-    "vhdl",
-]
-
-LibraryKind = Literal[
-    "none",
-    "uvm12",
-]
-
-
-@dataclass
-class ToolDescriptor:
-    kind: ToolKind
-    bin_dir: Path
-    repr_str: str
-
-
-ToolPool = Dict[str, ToolDescriptor]
+from . import tools
 
 
 @dataclass
 class UserSettings:
-    tools: ToolPool = field(default_factory=dict)
+    tools: tools.ToolPool = dataclasses.field(default_factory=dict)
 
 
-class GlobalSettings:
+class Settings:
     app_dir = Path.home().joinpath(".playhdl")
-    settings_file = app_dir.joinpath("settings.ini")
+    user_settings_file = app_dir.joinpath("settings.json")
 
     def __init__(self) -> None:
         self.user_settings: UserSettings
@@ -62,12 +29,22 @@ class GlobalSettings:
         self.app_dir.mkdir(parents=True, exist_ok=True)
 
         # Prepare settings file
-        if self.settings_file.is_file():
-            raise FileExistsError(f"Settings file '{self.settings_file}' exists already")
+        if self.user_settings_file.is_file():
+            raise FileExistsError(f"Settings file '{self.user_settings_file}' exists already")
         else:
-            log.debug(f"Try to create settings file '{self.settings_file}' and fill with defaults")
-            raise NotImplementedError
+            log.debug(f"Try to create settings file '{self.user_settings_file}' and fill with defaults")
 
-    def _auto_find_tools(self) -> ToolPool:
+            tool_pool = {}
+            for t in typing.get_args(tools.ToolKind):
+                tool_pool[f"{t}_unique_id_can_be_here"] = tools.ToolDescriptor(kind=t, bin_dir=Path("/path/to/bin/dir"))
+            self.user_settings = UserSettings(tools=tool_pool)
+            self.dump_user_settings()
+
+    def dump_user_settings(self) -> None:
+        """Dump user settings to file"""
+        with open(self.user_settings_file, "w") as f:
+            json.dump(dataclasses.asdict(self.user_settings), f)
+
+    def _auto_find_tools(self) -> tools.ToolPool:
         """Try to automatically find all avalaible tools"""
         raise NotImplementedError
