@@ -1,4 +1,3 @@
-from __future__ import annotations
 import pkg_resources
 import os
 from typing import Dict

@@ -1,10 +1,7 @@
 from __future__ import annotations
-import typing
-from typing import Literal, Dict
 from pathlib import Path
 import dataclasses
 from dataclasses import dataclass
-import json
 
 from . import log
 from . import tools
@@ -16,21 +13,28 @@ class UserSettings:
     tools: tools.ToolPool = dataclasses.field(default_factory=dict)
 
 
-def setup_user(app_dir: Path, user_settings_file: Path, force: bool = False) -> None:
+def setup_user(app_dir: Path, user_settings_file: Path) -> None:
     """Create settings and application folder for a first time"""
     # Prepare application directory
-    log.debug(f"Try to create application home '{app_dir}'")
+    log.info(f"Create application home ...'{app_dir}'")
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # Prepare settings file
-    if user_settings_file.is_file() and not force:
-        raise FileExistsError(f"Settings file '{user_settings_file}' already exists!")
-    log.debug(f"Try to create settings file '{user_settings_file}' and fill with defaults")
+    log.info(f"Create settings file ...")
+    log.info(f"  Try to find all tools available ...")
     tool_pool = {}
-    for t in typing.get_args(tools.ToolKind):
-        tool_pool[f"{t}_unique_id_can_be_here"] = tools.ToolDescriptor(kind=t, bin_dir=Path("/path/to/bin/dir"))
+    for t in tools.get_all_tool_kinds():
+        bin_dir = tools.find_tool_dir(t)
+        log.info(f"  {t}: {bin_dir}")
+        if bin_dir:
+            tool_pool[t] = tools.ToolDescriptor(kind=t, bin_dir=bin_dir)
     user_settings = UserSettings(tools=tool_pool)
+
+    log.info(f"Save settings file to '{user_settings_file}' ...")
+    if user_settings_file.is_file():
+        log.warning(f"Settings file '{user_settings_file}' already exists. It will be overwriten!")
     dump_user_settings(user_settings_file, user_settings)
+    log.info(f"Done!")
 
 
 def dump_user_settings(file: Path, settings: UserSettings) -> None:

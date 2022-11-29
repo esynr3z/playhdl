@@ -23,12 +23,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     log.debug(f"Execute 'cmd_setup' with {args}")
-    try:
-        settings.setup_user(app_dir, user_settings_file)
-    except FileExistsError as e:
-        print(e)
-        if utils.input_query_yes_no("Do you want to overwrite it?"):
-            settings.setup_user(app_dir, user_settings_file, force=True)
+    settings.setup_user(app_dir, user_settings_file)
 
 
 def parse_args():

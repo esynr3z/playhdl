@@ -1,7 +1,8 @@
-from __future__ import annotations
-from typing import Literal, Dict
+import typing
+from typing import Literal, Dict, Optional, Tuple
 from pathlib import Path
 from dataclasses import dataclass
+import shutil
 
 
 from . import log
@@ -34,3 +35,25 @@ class ToolDescriptor:
 
 
 ToolPool = Dict[str, ToolDescriptor]
+
+
+def get_all_tool_kinds() -> Tuple[ToolKind]:
+    return typing.get_args(ToolKind)
+
+
+def find_tool_dir(tool: ToolKind) -> Optional[Path]:
+    """Try to find a directory with executables for the provided tool"""
+    try:
+        exec = {
+            "modelsim": "vsim",
+            "xcelium": "xmsim",
+            "verilator": "verilator",
+            "icarus": "iverilog",
+            "vcs": "vcs",
+            "vivado": "xsim",
+        }[tool]
+    except KeyError:
+        raise KeyError(f"Unknown tool '{tool}'. Don't know what executable is.")
+
+    bin_dir = shutil.which(exec)
+    return Path(bin_dir) if bin_dir else None
