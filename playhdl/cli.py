@@ -52,5 +52,6 @@ add -h/--help argument to any command to get more information"""
 
 
 def main():
+    """Entry point to CLI of the application"""
     args = parse_args()
     args.func(args)
