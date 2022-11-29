@@ -8,9 +8,7 @@ authors = ["esynr3z <esynr3z@gmail.com>"]
 playhdl = "playhdl.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-pydantic = "^1.10.2"
-toml = "^0.10.2"
+python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

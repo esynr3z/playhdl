@@ -1,9 +1,13 @@
 import argparse
+from pathlib import Path
 
 from . import log
 from . import utils
 from . import tools
 from . import settings
+
+app_dir = Path.home().joinpath(".playhdl")
+user_settings_file = app_dir.joinpath("settings.json")
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -19,7 +23,12 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     log.debug(f"Execute 'cmd_setup' with {args}")
-    settings.Settings().setup()
+    try:
+        settings.setup_user(app_dir, user_settings_file)
+    except FileExistsError as e:
+        print(e)
+        if utils.input_query_yes_no("Do you want to overwrite it?"):
+            settings.setup_user(app_dir, user_settings_file, force=True)
 
 
 def parse_args():

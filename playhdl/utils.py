@@ -1,11 +1,9 @@
 from __future__ import annotations
 import pkg_resources
 import os
-from typing import TypeVar
+from typing import Dict
 from pathlib import Path
-
-import toml
-import pydantic
+import json
 
 
 def get_pkg_version() -> str:
@@ -18,25 +16,30 @@ def is_debug_en() -> bool:
     return "DEBUG" in os.environ
 
 
-_T = TypeVar("_T", bound="BaseModel")
+class PathJsonEncoder(json.JSONEncoder):
+    """Custom encoder that can serialize pathlib paths"""
+
+    def default(self, o):
+        if isinstance(o, Path):
+            return str(o)
+        else:
+            return o
 
 
-class BaseModel(pydantic.BaseModel):
-    """Custom pydantic BaseModel"""
+def json_dump(file: Path, data: Dict):
+    """Dump data to a JSON file"""
+    with file.open("w") as f:
+        json.dump(data, f, cls=PathJsonEncoder, indent=4)
 
-    class Config:
-        anystr_strip_whitespace = True
-        validate_all = True
-        extra = pydantic.Extra.forbid
-        use_enum_values = True
-        allow_mutation = False
 
-    def to_toml(self, file: Path) -> None:
-        """Dump settings to a TOML file."""
-        with file.open("w") as toml_file:
-            toml.dump(self.dict(), toml_file, toml.TomlPathlibEncoder())
-
-    @classmethod
-    def from_toml(cls, file: Path) -> _T:
-        with file.open("r") as toml_file:
-            return cls(**toml.load(toml_file))
+def input_query_yes_no(question: str) -> bool:
+    """Ask a yes/no question"""
+    print(f"{question} [y/n]")
+    while True:
+        answer = input().lower()
+        if answer.startswith("y"):
+            return True
+        elif answer.startswith("n"):
+            return False
+        else:
+            print("Usupported answer! Please type y/yes or n/no.")
