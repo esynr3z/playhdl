@@ -7,17 +7,17 @@ from . import core
 
 def cmd_run(args: argparse.Namespace) -> None:
     """Invoke simulation in the current workspace"""
-    log.info("Execute 'run' with", args)
+    log.debug(f"Execute 'cmd_run' with {args}")
 
 
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
-    log.info("Execute 'init' with", args)
+    log.debug(f"Execute 'cmd_init' with {args}")
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
-    log.info("Execute 'setup' with", args)
+    log.debug(f"Execute 'cmd_setup' with {args}")
 
 
 def parse_args():
