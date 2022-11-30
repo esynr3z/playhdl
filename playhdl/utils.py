@@ -2,6 +2,7 @@ import pkg_resources
 import os
 from typing import Dict
 from pathlib import Path
+from enum import Enum
 import json
 
 
@@ -15,20 +16,22 @@ def is_debug_en() -> bool:
     return "DEBUG" in os.environ
 
 
-class PathJsonEncoder(json.JSONEncoder):
-    """Custom encoder that can serialize pathlib paths"""
+class ExtendedJsonEncoder(json.JSONEncoder):
+    """Custom encoder that can serialize more types"""
 
-    def default(self, o):
-        if isinstance(o, Path):
-            return str(o)
+    def default(self, obj):
+        if isinstance(obj, Path):
+            return str(obj)
+        elif isinstance(obj, Enum):
+            return obj.name
         else:
-            return o
+            return json.JSONEncoder.default(self, obj)
 
 
 def json_dump(file: Path, data: Dict):
     """Dump data to a JSON file"""
     with file.open("w") as f:
-        json.dump(data, f, cls=PathJsonEncoder, indent=4)
+        json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
 
 
 def input_query_yes_no(question: str) -> bool:
@@ -42,3 +45,14 @@ def input_query_yes_no(question: str) -> bool:
             return False
         else:
             print("Usupported answer! Please type y/yes or n/no.")
+
+
+class ExtendedEnum(str, Enum):
+    def _generate_next_value_(name, start, count, last_values):
+        """This uses enumeration name as a string value for auto() call"""
+        return name
+
+    @classmethod
+    def aslist(cls):
+        """List of values of the enum"""
+        return list(map(lambda c: c.value, cls))

@@ -23,7 +23,7 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
     log.info(f"Create settings file ...")
     log.info(f"  Try to find all tools available ...")
     tool_pool = {}
-    for t in tools.get_all_tool_kinds():
+    for t in tools.ToolKind:
         bin_dir = tools.find_tool_dir(t)
         log.info(f"  {t}: {bin_dir}")
         if bin_dir:
