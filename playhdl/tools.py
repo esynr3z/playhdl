@@ -27,7 +27,7 @@ class DesignMode(utils.ExtendedEnum):
 
 
 class LibraryKind(utils.ExtendedEnum):
-    none = enum.auto()
+    nolib = enum.auto()
     uvm12 = enum.auto()
 
 

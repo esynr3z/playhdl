@@ -39,9 +39,16 @@ def parse_args():
     run   - invoke simulation in the current workspace
 
 add -h/--help argument to any command to get more information"""
+
+    class CustomFormatter(
+        argparse.RawTextHelpFormatter,
+        argparse.ArgumentDefaultsHelpFormatter,
+    ):
+        pass
+
     parser = argparse.ArgumentParser(
         description=parser_descr,
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=CustomFormatter,
     )
 
     subparsers = parser.add_subparsers(help="command to process", dest="command", required=True)
@@ -49,8 +56,21 @@ add -h/--help argument to any command to get more information"""
     parser_setup = subparsers.add_parser("setup")
     parser_setup.set_defaults(func=cmd_setup)
 
-    parser_init = subparsers.add_parser("init")
-    parser_init.add_argument("mode", help="design and testbench mode")
+    parser_init = subparsers.add_parser("init", formatter_class=CustomFormatter)
+    parser_init.add_argument(
+        "--mode",
+        type=tools.DesignMode,
+        default=tools.DesignMode.systemverilog,
+        choices=list(tools.DesignMode),
+        help="design and testbench mode",
+    )
+    parser_init.add_argument(
+        "--lib",
+        type=tools.LibraryKind,
+        default=tools.LibraryKind.nolib,
+        choices=list(tools.LibraryKind),
+        help="external library to use",
+    )
     parser_init.set_defaults(func=cmd_init)
 
     parser_run = subparsers.add_parser("run")

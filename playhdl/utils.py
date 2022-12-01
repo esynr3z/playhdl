@@ -52,6 +52,9 @@ class ExtendedEnum(str, Enum):
         """This uses enumeration name as a string value for auto() call"""
         return name
 
+    def __str__(self):
+        return self.value
+
     @classmethod
     def aslist(cls):
         """List of values of the enum"""
