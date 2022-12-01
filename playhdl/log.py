@@ -28,15 +28,22 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-# Create logger
-logger = logging.getLogger("playhdl")
-logger.setLevel(logging.DEBUG)
+logger: logging.Logger
 
-# Create console handler with custom formatting
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG if utils.is_debug_en() else logging.INFO)
-ch.setFormatter(CustomFormatter())
-logger.addHandler(ch)
+
+def init_logger():
+    """Initialize global logger"""
+    global logger
+
+    # Create logger
+    logger = logging.getLogger("playhdl")
+    logger.setLevel(logging.DEBUG)
+
+    # Create console handler with custom formatting
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG if utils.is_debug_en() else logging.INFO)
+    ch.setFormatter(CustomFormatter())
+    logger.addHandler(ch)
 
 
 def debug(*args, **kwargs) -> None:

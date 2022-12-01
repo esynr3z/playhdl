@@ -20,7 +20,7 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # Prepare settings file
-    log.info(f"Create settings file ...")
+    log.info(f"Create default settings ...")
     log.info(f"  Try to find all tools available ...")
     tool_pool = {}
     for t in tools.ToolKind:
@@ -30,13 +30,18 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
             tool_pool[t] = tools.ToolDescriptor(kind=t, bin_dir=bin_dir)
     user_settings = UserSettings(tools=tool_pool)
 
-    log.info(f"Save settings file to '{user_settings_file}' ...")
+    # Try to save settings to file
+    log.info(f"Save settings to '{user_settings_file}' ...")
     if user_settings_file.is_file():
-        log.warning(f"Settings file '{user_settings_file}' already exists. It will be overwriten!")
+        # Provide message and lamda with dump method in case caller want to query user for further steps
+        raise FileExistsError(
+            f"Settings file '{user_settings_file}' already exists. It will be overwriten!",
+            lambda: dump_user_settings(user_settings_file, user_settings),
+        )
     dump_user_settings(user_settings_file, user_settings)
-    log.info(f"Done!")
 
 
 def dump_user_settings(file: Path, settings: UserSettings) -> None:
     """Dump user settings to file"""
     utils.json_dump(file, dataclasses.asdict(settings))
+    log.info(f"Settings are successfuly dumped to '{file}'")

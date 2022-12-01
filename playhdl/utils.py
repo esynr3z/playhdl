@@ -4,6 +4,9 @@ from typing import Dict
 from pathlib import Path
 from enum import Enum
 import json
+import distutils
+
+from . import log
 
 
 def get_pkg_version() -> str:
@@ -34,17 +37,14 @@ def json_dump(file: Path, data: Dict):
         json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
 
 
-def input_query_yes_no(question: str) -> bool:
+def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
     """Ask a yes/no question"""
-    print(f"{question} [y/n]")
+    log.warning(f"{question} [y/n]")
     while True:
-        answer = input().lower()
-        if answer.startswith("y"):
-            return True
-        elif answer.startswith("n"):
-            return False
-        else:
-            print("Usupported answer! Please type y/yes or n/no.")
+        try:
+            return distutils.util.strtobool(input().lower())
+        except ValueError:
+            log.error("Usupported answer! Please type y/yes or n/no.")
 
 
 class ExtendedEnum(str, Enum):
