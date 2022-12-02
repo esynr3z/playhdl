@@ -1,10 +1,12 @@
 import pkg_resources
 import os
-from typing import Dict
+from typing import Dict, Tuple, Any, List
 from pathlib import Path
 from enum import Enum
 import json
 import distutils
+import sys
+import inspect
 
 from . import log
 
@@ -35,6 +37,15 @@ def json_dump(file: Path, data: Dict):
     """Dump data to a JSON file"""
     with file.open("w") as f:
         json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
+
+
+def get_module_sublcasses(module_name: str, subclass: type) -> List[type]:
+    """Get all subclasses in the module"""
+    found = []
+    for name, cls in inspect.getmembers(sys.modules[module_name], inspect.isclass):
+        if issubclass(cls, subclass):
+            found.append(cls)
+    return found
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:

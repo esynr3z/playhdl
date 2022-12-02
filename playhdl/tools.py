@@ -1,15 +1,16 @@
 import typing
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Type
 from pathlib import Path
 from dataclasses import dataclass
 import enum
 from enum import Enum
 import shutil
-import abc
+from abc import ABC, abstractmethod
 
 
 from . import log
 from . import utils
+from . import templates
 
 
 class ToolKind(utils.ExtendedEnum):
@@ -19,17 +20,6 @@ class ToolKind(utils.ExtendedEnum):
     icarus = enum.auto()
     vcs = enum.auto()
     vivado = enum.auto()
-
-
-class DesignMode(utils.ExtendedEnum):
-    verilog = enum.auto()
-    systemverilog = enum.auto()
-    vhdl = enum.auto()
-
-
-class LibraryKind(utils.ExtendedEnum):
-    nolib = enum.auto()
-    uvm12 = enum.auto()
 
 
 @dataclass
@@ -59,34 +49,43 @@ def find_tool_dir(tool: ToolKind) -> Optional[Path]:
     return Path(bin_dir) if bin_dir else None
 
 
-class Tool:
+class Tool(ABC):
     """Generic tool"""
 
-    @classmethod
-    def generate_script(cls, mode: DesignMode, lib: LibraryKind, **kwargs) -> List[str]:
+    @abstractmethod
+    def generate_script(self, design_kind: templates.DesignKind, lib: templates.LibraryKind, **kwargs) -> List[str]:
         """Generate list of commands to perform tool execution"""
-        raise NotImplementedError
+        pass
 
-    @classmethod
-    def get_kind(cls) -> ToolKind:
+    @abstractmethod
+    def get_kind(self) -> ToolKind:
         """Get kind of the tool"""
-        raise NotImplementedError
+        pass
+
+    @abstractmethod
+    def get_basic_exe_name(self) -> str:
+        """Get name of the basic executable"""
+        pass
+
+
+def get_tool(kind: ToolKind) -> type(Tool):
+    """Get template files according to design kind"""
+    pass
 
 
 class Icarus(Tool):
     """Icarus Verilog"""
 
-    @classmethod
-    def generate_script(cls, mode: DesignMode, lib: LibraryKind, **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, lib: templates.LibraryKind, **kwargs) -> List[str]:
         """Generate list of commands to perform tool execution"""
         # No external libraries are supported
-        if lib != LibraryKind.nolib:
+        if lib != templates.LibraryKind.nolib:
             raise ValueError
 
         script = []
-        if mode == DesignMode.verilog:
+        if design_kind == templates.DesignKind.verilog:
             script.append("iverilog -Wall -g2001 tb.v -o tb.out")
-        elif mode == DesignMode.systemverilog:
+        elif design_kind == templates.DesignKind.systemverilog:
             script.append("iverilog -Wall -g2012 tb.sv -o tb.out")
         else:
             raise ValueError
@@ -94,7 +93,6 @@ class Icarus(Tool):
 
         return script
 
-    @classmethod
-    def get_kind(cls) -> ToolKind:
+    def get_kind(self) -> ToolKind:
         """Get kind of the tool"""
         return ToolKind.icarus
