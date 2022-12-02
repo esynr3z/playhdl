@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import enum
 from enum import Enum
 import shutil
+import abc
 
 
 from . import log
@@ -56,3 +57,44 @@ def find_tool_dir(tool: ToolKind) -> Optional[Path]:
 
     bin_dir = shutil.which(exec)
     return Path(bin_dir) if bin_dir else None
+
+
+class Tool:
+    """Generic tool"""
+
+    @classmethod
+    def generate_script(cls, mode: DesignMode, lib: LibraryKind, **kwargs) -> List[str]:
+        """Generate list of commands to perform tool execution"""
+        raise NotImplementedError
+
+    @classmethod
+    def get_kind(cls) -> ToolKind:
+        """Get kind of the tool"""
+        raise NotImplementedError
+
+
+class Icarus(Tool):
+    """Icarus Verilog"""
+
+    @classmethod
+    def generate_script(cls, mode: DesignMode, lib: LibraryKind, **kwargs) -> List[str]:
+        """Generate list of commands to perform tool execution"""
+        # No external libraries are supported
+        if lib != LibraryKind.nolib:
+            raise ValueError
+
+        script = []
+        if mode == DesignMode.verilog:
+            script.append("iverilog -Wall -g2001 tb.v -o tb.out")
+        elif mode == DesignMode.systemverilog:
+            script.append("iverilog -Wall -g2012 tb.sv -o tb.out")
+        else:
+            raise ValueError
+        script.append("vvp tb.out")
+
+        return script
+
+    @classmethod
+    def get_kind(cls) -> ToolKind:
+        """Get kind of the tool"""
+        return ToolKind.icarus
