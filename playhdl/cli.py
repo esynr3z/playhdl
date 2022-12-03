@@ -4,11 +4,13 @@ from pathlib import Path
 from . import log
 from . import utils
 from . import templates
+from . import session
 from . import tools
 from . import settings
 
 app_dir = Path.home().joinpath(".playhdl")
 user_settings_file = app_dir.joinpath("settings.json")
+session_file = Path("playhdl.json")
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -20,23 +22,29 @@ def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
     log.debug(f"Execute 'cmd_init' with {args}")
 
+    # Load user settings
+    user_settings = settings.load_user_settings(user_settings_file)
+
     # Generate code templates
     source_files = templates.generate_templates(args.mode)
-    source_filenames = [f.filename for f in source_files]
+    for src in source_files:
+        with utils.query_if_file_exists():
+            templates.dump_template(src)
 
-    # Generate simulator scripts
-    tool_scripts = tools.generate_all_possible_scripts(args.mode, source_filenames)
-    if len(tool_scripts) == 0:
-        log.error(f"Can't find any suitable tool for the provided design mode '{args.mode}'")
-        exit(1)
+    # Init session file
+    with utils.query_if_file_exists():
+        try:
+            session.init(session_file, args.mode, [f.filename for f in source_files], user_settings)
+        except ValueError as e:
+            log.error(str(e))
+            exit(1)
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     log.debug(f"Execute 'cmd_setup' with {args}")
-    utils.execute_with_file_exists_query(
-        lambda: settings.setup_user(app_dir, user_settings_file),
-    )
+    with utils.query_if_file_exists():
+        settings.setup_user(app_dir, user_settings_file)
 
 
 def parse_args():

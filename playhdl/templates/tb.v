@@ -6,9 +6,8 @@ module tb;
     always #5 clk = ~clk;
 
     initial begin
-        #100;
         $display("Hello world!");
-        #100;
+        repeat (10) @(posedge clk);
         $finish;
     end
 

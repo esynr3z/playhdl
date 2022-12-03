@@ -40,5 +40,13 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
 
 def dump_user_settings(file: Path, settings: UserSettings) -> None:
     """Dump user settings to file"""
-    utils.json_dump(file, dataclasses.asdict(settings))
+    utils.dump_json(file, dataclasses.asdict(settings))
     log.info(f"Settings are successfuly dumped to '{file}'")
+
+
+def load_user_settings(file: Path) -> UserSettings:
+    """Load user settings from file"""
+    data = utils.load_json(file)
+    settings = UserSettings(data)
+    log.info(f"Settings are successfuly loaded from '{file}'")
+    return settings

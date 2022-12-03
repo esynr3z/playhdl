@@ -5,6 +5,8 @@ from pathlib import Path
 from enum import Enum
 import json
 import distutils
+from contextlib import contextmanager
+
 
 from . import log
 
@@ -31,10 +33,16 @@ class ExtendedJsonEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def json_dump(file: Path, data: Dict):
+def dump_json(file: Path, data: Dict):
     """Dump data to a JSON file"""
     with file.open("w") as f:
         json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
+
+
+def load_json(file: Path) -> Dict:
+    """Load data from a JSON file"""
+    with file.open("r") as f:
+        return json.load(f)
 
 
 def write_file_aware_existance(filepath: Path, write_func: Callable):
@@ -48,14 +56,14 @@ def write_file_aware_existance(filepath: Path, write_func: Callable):
     write_func()
 
 
-def execute_with_file_exists_query(func: Callable):
-    """Execute provided function and handle file existance errors"""
+@contextmanager
+def query_if_file_exists(force_yes=False):
     try:
-        func()
+        yield
     except FileExistsError as e:
-        log.warning(e.args[0])  # Warn user with provided message
-        if input_query_yes_no():
-            e.args[1]()  # Call lambda with a dump method
+        log.warning(e.args[0])  # Warn user with a provided message
+        if force_yes or input_query_yes_no():
+            e.args[1]()  # Call lambda with a method that overwrites a file
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
