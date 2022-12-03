@@ -1,24 +1,18 @@
-from typing import List, Tuple, Dict
+from __future__ import annotations
+from typing import List, Type
 from pathlib import Path
 import enum
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractclassmethod
 from dataclasses import dataclass
-import sys
-import inspect
 
-from .. import log
 from .. import utils
 
 
 class DesignKind(utils.ExtendedEnum):
     verilog = enum.auto()
     systemverilog = enum.auto()
+    systemverilog_uvm12 = enum.auto()
     vhdl = enum.auto()
-
-
-class LibraryKind(utils.ExtendedEnum):
-    nolib = enum.auto()
-    uvm12 = enum.auto()
 
 
 @dataclass
@@ -27,63 +21,75 @@ class TemplateDescriptor:
     content: str
 
 
-class DesignTemplate(ABC):
+def generate_templates(design_kind: DesignKind) -> List[TemplateDescriptor]:
+    """Get template files according to design kind"""
+    return _DesignTemplate.get_subclass_by_kind(design_kind)().generate()
+
+
+def dump_template(template: TemplateDescriptor) -> None:
+    """Save template to the disc"""
+
+    def write_file(filepath: Path, content: str):
+        with filepath.open("w") as f:
+            f.write(content)
+
+    filepath = Path(template.filename)
+    utils.write_file_aware_existance(
+        filepath,
+        lambda: write_file(filepath, template.content),
+    )
+
+
+class _DesignTemplate(ABC):
     """Generic template"""
 
     @abstractmethod
-    def generate(self, lib: LibraryKind, **kwargs) -> List[TemplateDescriptor]:
+    def generate(self, **kwargs) -> List[TemplateDescriptor]:
         """Generate design template files"""
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
-    def get_kind(self) -> DesignKind:
+    @abstractclassmethod
+    def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
-        pass
+        raise NotImplementedError
 
     def _read_template_file(self, filename: str) -> str:
         """Read provided template file"""
         with Path(__file__).parent.joinpath(filename).open("r") as f:
             return f.read()
 
+    @classmethod
+    def get_subclass_by_kind(cls, design_kind: DesignKind) -> Type[_DesignTemplate]:
+        """Get template class according to design kind"""
+        for cls in _DesignTemplate.__subclasses__():
+            if cls.get_kind() == design_kind:
+                return cls
+        raise ValueError(f"Can't find template class for design_kind={design_kind}")
 
-class Verilog(DesignTemplate):
+
+class _Verilog(_DesignTemplate):
     """Verilog design template"""
 
-    def generate(self, lib: LibraryKind, **kwargs) -> List[TemplateDescriptor]:
+    def generate(self, **kwargs) -> List[TemplateDescriptor]:
         """Generate design template files"""
-        # No external libraries are supported
-        if lib != LibraryKind.nolib:
-            raise ValueError("No external libraries are supported")
-
         content = self._read_template_file("tb.v")
         return [TemplateDescriptor("tb.v", content)]
 
-    def get_kind(self) -> DesignKind:
+    @classmethod
+    def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
         return DesignKind.verilog
 
 
-class SystemVerilog(DesignTemplate):
+class _SystemVerilog(_DesignTemplate):
     """SystemVerilog design template"""
 
-    def generate(self, lib: LibraryKind, **kwargs) -> List[TemplateDescriptor]:
+    def generate(self, **kwargs) -> List[TemplateDescriptor]:
         """Generate design template files"""
-        # No external libraries are supported
-        if lib != LibraryKind.nolib:
-            raise ValueError("No external libraries are supported")
-
         content = self._read_template_file("tb.sv")
         return [TemplateDescriptor("tb.sv", content)]
 
-    def get_kind(self) -> DesignKind:
+    @classmethod
+    def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
         return DesignKind.systemverilog
-
-
-def get_templates(design_kind: DesignKind, lib: LibraryKind) -> List[TemplateDescriptor]:
-    """Get template files according to design kind"""
-    for cls in utils.get_module_sublcasses(__name__, DesignTemplate):
-        obj = cls()
-        if obj.get_kind() == design_kind:
-            return obj.generate(lib)
-    raise ValueError(f"Can't find template for design_kind={design_kind}")

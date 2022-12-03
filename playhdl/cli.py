@@ -3,6 +3,7 @@ from pathlib import Path
 
 from . import log
 from . import utils
+from . import templates
 from . import tools
 from . import settings
 
@@ -19,16 +20,23 @@ def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
     log.debug(f"Execute 'cmd_init' with {args}")
 
+    # Generate code templates
+    source_files = templates.generate_templates(args.mode)
+    source_filenames = [f.filename for f in source_files]
+
+    # Generate simulator scripts
+    tool_scripts = tools.generate_all_possible_scripts(args.mode, source_filenames)
+    if len(tool_scripts) == 0:
+        log.error(f"Can't find any suitable tool for the provided design mode '{args.mode}'")
+        exit(1)
+
 
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     log.debug(f"Execute 'cmd_setup' with {args}")
-    try:
-        settings.setup_user(app_dir, user_settings_file)
-    except FileExistsError as e:
-        log.warning(e.args[0])  # Warn user with provided message
-        if utils.input_query_yes_no():
-            e.args[1]()  # Call lambda with a dump method
+    utils.execute_with_file_exists_query(
+        lambda: settings.setup_user(app_dir, user_settings_file),
+    )
 
 
 def parse_args():
@@ -59,17 +67,10 @@ add -h/--help argument to any command to get more information"""
     parser_init = subparsers.add_parser("init", formatter_class=CustomFormatter)
     parser_init.add_argument(
         "--mode",
-        type=tools.DesignMode,
-        default=tools.DesignMode.systemverilog,
-        choices=list(tools.DesignMode),
+        type=templates.DesignKind,
+        default=templates.DesignKind.systemverilog,
+        choices=list(templates.DesignKind),
         help="design and testbench mode",
-    )
-    parser_init.add_argument(
-        "--lib",
-        type=tools.LibraryKind,
-        default=tools.LibraryKind.nolib,
-        choices=list(tools.LibraryKind),
-        help="external library to use",
     )
     parser_init.set_defaults(func=cmd_init)
 

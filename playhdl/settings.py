@@ -32,13 +32,10 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
 
     # Try to save settings to file
     log.info(f"Save settings to '{user_settings_file}' ...")
-    if user_settings_file.is_file():
-        # Provide message and lamda with dump method in case caller want to query user for further steps
-        raise FileExistsError(
-            f"Settings file '{user_settings_file}' already exists. It will be overwriten!",
-            lambda: dump_user_settings(user_settings_file, user_settings),
-        )
-    dump_user_settings(user_settings_file, user_settings)
+    utils.write_file_aware_existance(
+        user_settings_file,
+        lambda: dump_user_settings(user_settings_file, user_settings),
+    )
 
 
 def dump_user_settings(file: Path, settings: UserSettings) -> None:

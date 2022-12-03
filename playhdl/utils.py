@@ -1,12 +1,10 @@
 import pkg_resources
 import os
-from typing import Dict, Tuple, Any, List
+from typing import Dict, Callable
 from pathlib import Path
 from enum import Enum
 import json
 import distutils
-import sys
-import inspect
 
 from . import log
 
@@ -39,13 +37,25 @@ def json_dump(file: Path, data: Dict):
         json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
 
 
-def get_module_sublcasses(module_name: str, subclass: type) -> List[type]:
-    """Get all subclasses in the module"""
-    found = []
-    for name, cls in inspect.getmembers(sys.modules[module_name], inspect.isclass):
-        if issubclass(cls, subclass):
-            found.append(cls)
-    return found
+def write_file_aware_existance(filepath: Path, write_func: Callable):
+    """Write file to the disk if it doesn't exist and raise exception otherwise"""
+    if filepath.is_file():
+        # Provide message and lamda with dump method in case caller want to query user for further steps
+        raise FileExistsError(
+            f"File '{filepath}' already exists. It will be overwriten!",
+            write_func,
+        )
+    write_func()
+
+
+def execute_with_file_exists_query(func: Callable):
+    """Execute provided function and handle file existance errors"""
+    try:
+        func()
+    except FileExistsError as e:
+        log.warning(e.args[0])  # Warn user with provided message
+        if input_query_yes_no():
+            e.args[1]()  # Call lambda with a dump method
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
