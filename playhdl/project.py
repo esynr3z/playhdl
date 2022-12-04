@@ -10,6 +10,8 @@ from . import settings
 from . import tools
 from . import utils
 
+logger = log.get_logger()
+
 
 def init(
     project_file: Path,
@@ -18,7 +20,7 @@ def init(
     user_settings: settings.UserSettings,
 ):
     available_tools = set(t.kind for t in user_settings.tools.values())
-    log.debug(f"Available tools according user settings: {available_tools}")
+    logger.debug(f"Available tools according user settings: {available_tools}")
 
     # Generate simulator scripts for the selected design mode
     tool_scripts = {}
@@ -29,7 +31,7 @@ def init(
             pass
     if len(tool_scripts) == 0:
         raise ValueError(f"Can't find any suitable tool for the provided design mode '{design_kind}'")
-    log.debug(f"Generated tool scripts for '{design_kind}': {list(tool_scripts.keys())}")
+    logger.debug(f"Generated tool scripts for '{design_kind}': {list(tool_scripts.keys())}")
 
     # Filter scripts according available tools
     pass

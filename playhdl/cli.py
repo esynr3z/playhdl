@@ -8,6 +8,8 @@ from . import project
 from . import tools
 from . import settings
 
+logger = log.get_logger()
+
 app_dir = Path.home().joinpath(".playhdl")
 user_settings_file = app_dir.joinpath("settings.json")
 session_file = Path("playhdl.json")
@@ -15,12 +17,12 @@ session_file = Path("playhdl.json")
 
 def cmd_run(args: argparse.Namespace) -> None:
     """Invoke simulation in the current workspace"""
-    log.debug(f"Execute 'cmd_run' with {args}")
+    logger.debug(f"Execute 'cmd_run' with {args}")
 
 
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
-    log.debug(f"Execute 'cmd_init' with {args}")
+    logger.debug(f"Execute 'cmd_init' with {args}")
 
     # Load user settings
     user_settings = settings.load_user_settings(user_settings_file)
@@ -36,13 +38,13 @@ def cmd_init(args: argparse.Namespace) -> None:
         try:
             project.init(session_file, args.mode, [f.filename for f in source_files], user_settings)
         except ValueError as e:
-            log.error(str(e))
+            logger.error(str(e))
             exit(1)
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
-    log.debug(f"Execute 'cmd_setup' with {args}")
+    logger.debug(f"Execute 'cmd_setup' with {args}")
     with utils.query_if_file_exists():
         settings.setup_user(app_dir, user_settings_file)
 

@@ -3,7 +3,7 @@ import logging
 from . import utils
 
 
-class CustomFormatter(logging.Formatter):
+class _CustomFormatter(logging.Formatter):
     """Formatter based on https://stackoverflow.com/a/56944256"""
 
     grey = "\x1b[38;20m"
@@ -12,14 +12,16 @@ class CustomFormatter(logging.Formatter):
     red = "\x1b[31;20m"
     bold_red = "\x1b[31;1m"
     reset = "\x1b[0m"
-    format_s = "%(levelname)s: %(message)s"
+    generic_format = "%(levelname)s: %(message)s"
+    info_format = "%(message)s"
+    debug_format = "%(levelname)s: [%(filename)s:%(lineno)d] %(message)s"
 
     formats = {
-        logging.DEBUG: green + format_s + reset,
-        logging.INFO: grey + format_s + reset,
-        logging.WARNING: yellow + format_s + reset,
-        logging.ERROR: red + format_s + reset,
-        logging.CRITICAL: bold_red + format_s + reset,
+        logging.DEBUG: green + debug_format + reset,
+        logging.INFO: grey + info_format + reset,
+        logging.WARNING: yellow + generic_format + reset,
+        logging.ERROR: red + generic_format + reset,
+        logging.CRITICAL: bold_red + generic_format + reset,
     }
 
     def format(self, record):
@@ -28,13 +30,8 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-logger: logging.Logger
-
-
 def init_logger():
     """Initialize global logger"""
-    global logger
-
     # Create logger
     logger = logging.getLogger("playhdl")
     logger.setLevel(logging.DEBUG)
@@ -42,21 +39,10 @@ def init_logger():
     # Create console handler with custom formatting
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG if utils.is_debug_en() else logging.INFO)
-    ch.setFormatter(CustomFormatter())
+    ch.setFormatter(_CustomFormatter())
     logger.addHandler(ch)
 
 
-def debug(*args, **kwargs) -> None:
-    logger.debug(*args, **kwargs)
-
-
-def info(*args, **kwargs) -> None:
-    logger.info(*args, **kwargs)
-
-
-def warning(*args, **kwargs) -> None:
-    logger.warning(*args, **kwargs)
-
-
-def error(*args, **kwargs) -> None:
-    logger.error(*args, **kwargs)
+def get_logger() -> logging.Logger:
+    """Get package logger"""
+    return logging.getLogger("playhdl")

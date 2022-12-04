@@ -11,6 +11,8 @@ from dataclasses import dataclass, is_dataclass
 
 from . import log
 
+logger = log.get_logger()
+
 
 def get_pkg_version() -> str:
     """Get version of the package"""
@@ -62,19 +64,19 @@ def query_if_file_exists(force_yes=False):
     try:
         yield
     except FileExistsError as e:
-        log.warning(e.args[0])  # Warn user with a provided message
+        logger.warning(e.args[0])  # Warn user with a provided message
         if force_yes or input_query_yes_no():
             e.args[1]()  # Call lambda with a method that overwrites a file
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
     """Ask a yes/no question"""
-    log.warning(f"{question} [y/n]")
+    logger.warning(f"{question} [y/n]")
     while True:
         try:
-            return distutils.util.strtobool(input().lower())
+            return distutils.util.strtobool(input().lower())  # type: ignore
         except ValueError:
-            log.error("Usupported answer! Please type y/yes or n/no.")
+            logger.error("Usupported answer! Please type y/yes or n/no.")
 
 
 class ExtendedEnum(str, Enum):
@@ -89,14 +91,3 @@ class ExtendedEnum(str, Enum):
     def aslist(cls):
         """List of values of the enum"""
         return list(map(lambda c: c.value, cls))
-
-
-def dataclass_from_dict(class_: Any, dict_: Dict) -> Any:
-    """Recursevely create dataclass from a nested dictionary"""
-    try:
-        fieldtypes = class_.__annotations__
-        return class_(**{f: dataclass_from_dict(fieldtypes[f], dict_[f]) for f in dict_})
-    except AttributeError:
-        if isinstance(dict_, (tuple, list)):
-            return [dataclass_from_dict(class_.__args__[0], f) for f in dict_]
-        return dict_

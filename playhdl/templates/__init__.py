@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from .. import log
 from .. import utils
 
+logger = log.get_logger()
+
 
 class DesignKind(utils.ExtendedEnum):
     verilog = enum.auto()
@@ -24,10 +26,10 @@ class TemplateDescriptor:
 
 def generate_templates(design_kind: DesignKind) -> List[TemplateDescriptor]:
     """Get template files according to design kind"""
-    log.info(f"Generate templates for '{design_kind}' design ...")
+    logger.info(f"Generate templates for '{design_kind}' design ...")
     templates = _DesignTemplate.get_subclass_by_kind(design_kind)().generate()
     filenames = [t.filename for t in templates]
-    log.info(f"  {' '.join(filenames)}")
+    logger.info(f"  {' '.join(filenames)}")
     return templates
 
 
@@ -39,7 +41,7 @@ def dump_template(template: TemplateDescriptor) -> None:
             f.write(content)
 
     filepath = Path(template.filename)
-    log.info(f"Save '{filepath}' to a disk ...")
+    logger.info(f"Save '{filepath}' to a disk ...")
     utils.write_file_aware_existance(
         filepath,
         lambda: write_file(filepath, template.content),
