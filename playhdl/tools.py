@@ -21,12 +21,13 @@ class ToolKind(utils.ExtendedEnum):
 
 
 @dataclass
-class ToolDescriptor:
-    kind: ToolKind
-    bin_dir: Path
+class ToolScript:
+    build: List[str]
+    sim: List[str]
+    waves: List[str]
 
 
-ToolPool = Dict[str, ToolDescriptor]
+ToolUid = str
 
 
 def find_tool_dir(tool_kind: ToolKind) -> Optional[Path]:
@@ -34,27 +35,16 @@ def find_tool_dir(tool_kind: ToolKind) -> Optional[Path]:
     return _Tool.get_subclass_by_kind(tool_kind)().find_bin_dir()
 
 
-def generate_script(tool_kind: ToolKind, design_kind: templates.DesignKind, sources: List[str]) -> List[str]:
+def generate_script(tool_kind: ToolKind, design_kind: templates.DesignKind, sources: List[str]) -> ToolScript:
     """Generate script for the provided tool and design"""
     return _Tool.get_subclass_by_kind(tool_kind)().generate_script(design_kind, sources)
-
-
-def generate_all_possible_scripts(design_kind: templates.DesignKind, sources: List[str]) -> Dict[str, List[str]]:
-    """Generate all posible tool scripts for the provided design"""
-    scripts = {}
-    for tool in ToolKind:
-        try:
-            scripts[tool] = generate_script(tool, design_kind, sources)
-        except ValueError:
-            pass
-    return scripts
 
 
 class _Tool(ABC):
     """Generic tool"""
 
     @abstractmethod
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         """Generate list of commands to perform tool execution"""
         raise NotImplementedError
 
@@ -85,7 +75,7 @@ class _Tool(ABC):
 class _Icarus(_Tool):
     """Icarus Verilog"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         if design_kind not in (templates.DesignKind.verilog, templates.DesignKind.systemverilog):
             raise ValueError(f"Icarus doesn't support provided design kind '{design_kind}'")
 
@@ -97,7 +87,7 @@ class _Icarus(_Tool):
         build_cmd = f"iverilog -Wall {lang_ver} {' '.join(sources)} -o tb.out"
         sim_cmd = "vvp tb.out"
 
-        return [build_cmd, sim_cmd]
+        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[""])
 
     @classmethod
     def get_kind(cls) -> ToolKind:
@@ -111,7 +101,7 @@ class _Icarus(_Tool):
 class _Modelsim(_Tool):
     """Siemens (Mentor Grapthics) Modelsim"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         raise NotImplementedError
 
     @classmethod
@@ -126,7 +116,7 @@ class _Modelsim(_Tool):
 class _Xcelium(_Tool):
     """Cadence Xcelium"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         raise NotImplementedError
 
     @classmethod
@@ -141,7 +131,7 @@ class _Xcelium(_Tool):
 class _Verilator(_Tool):
     """Veripool Verilator"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         raise NotImplementedError
 
     @classmethod
@@ -156,7 +146,7 @@ class _Verilator(_Tool):
 class _Vcs(_Tool):
     """Synopsys VCS"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         raise NotImplementedError
 
     @classmethod
@@ -171,7 +161,7 @@ class _Vcs(_Tool):
 class _Vivado(_Tool):
     """Xilinx Vivado"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> List[str]:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
         raise NotImplementedError
 
     @classmethod
