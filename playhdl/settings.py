@@ -12,6 +12,12 @@ from . import utils
 class UserSettings:
     tools: tools.ToolPool = dataclasses.field(default_factory=dict)
 
+    def __post_init__(self):
+        for uid, descriptor in self.tools.items():
+            # dataclass can't handle nesting, so deserealization has to be done mannualy
+            # 'descriptor' here is raw dict after original init, so type checker is wrong
+            self.tools[uid] = tools.ToolDescriptor(**descriptor)  # type: ignore
+
 
 def setup_user(app_dir: Path, user_settings_file: Path) -> None:
     """Create settings and application folder for a first time"""
@@ -47,6 +53,7 @@ def dump_user_settings(file: Path, settings: UserSettings) -> None:
 def load_user_settings(file: Path) -> UserSettings:
     """Load user settings from file"""
     data = utils.load_json(file)
-    settings = UserSettings(data)
+    settings = UserSettings(**data)
+    log.debug(f"Loaded user settings: {settings}")
     log.info(f"Settings are successfuly loaded from '{file}'")
     return settings

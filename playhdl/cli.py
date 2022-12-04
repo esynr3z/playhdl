@@ -4,7 +4,7 @@ from pathlib import Path
 from . import log
 from . import utils
 from . import templates
-from . import session
+from . import project
 from . import tools
 from . import settings
 
@@ -34,7 +34,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     # Init session file
     with utils.query_if_file_exists():
         try:
-            session.init(session_file, args.mode, [f.filename for f in source_files], user_settings)
+            project.init(session_file, args.mode, [f.filename for f in source_files], user_settings)
         except ValueError as e:
             log.error(str(e))
             exit(1)

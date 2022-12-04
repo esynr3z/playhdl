@@ -1,11 +1,12 @@
 import pkg_resources
 import os
-from typing import Dict, Callable
+from typing import Dict, Callable, Dict, Any
 from pathlib import Path
 from enum import Enum
 import json
 import distutils
 from contextlib import contextmanager
+from dataclasses import dataclass, is_dataclass
 
 
 from . import log
@@ -88,3 +89,14 @@ class ExtendedEnum(str, Enum):
     def aslist(cls):
         """List of values of the enum"""
         return list(map(lambda c: c.value, cls))
+
+
+def dataclass_from_dict(class_: Any, dict_: Dict) -> Any:
+    """Recursevely create dataclass from a nested dictionary"""
+    try:
+        fieldtypes = class_.__annotations__
+        return class_(**{f: dataclass_from_dict(fieldtypes[f], dict_[f]) for f in dict_})
+    except AttributeError:
+        if isinstance(dict_, (tuple, list)):
+            return [dataclass_from_dict(class_.__args__[0], f) for f in dict_]
+        return dict_
