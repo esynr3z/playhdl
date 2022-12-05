@@ -1,21 +1,17 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import List, Dict, Any
-import dataclasses
-from dataclasses import dataclass
+from typing import Dict
 import subprocess
 import os
 import shutil
 import sys
 
 from . import log
-from . import templates
 from . import settings
 from . import project
 from . import tools
-from . import utils
 
-logger = log.get_logger()
+_logger = log.get_logger()
 
 
 def _patch_path(bin_dir: Path, env: Dict[str, str]) -> None:
@@ -27,7 +23,7 @@ def _patch_path(bin_dir: Path, env: Dict[str, str]) -> None:
 def _prepare_work_dir(tool_uid: tools.ToolUid) -> Path:
     """Prepare working directory"""
     work_dir = Path(f"./{tool_uid}")
-    logger.info(f"Clear working directory '{work_dir}'")
+    _logger.info(f"Clear working directory '{work_dir}'")
     shutil.rmtree(work_dir, ignore_errors=True)
     work_dir.mkdir()
     return work_dir
@@ -38,7 +34,7 @@ def _exec(cmd: str, cwd: Path, bin_dir: Path, env: Dict[str, str]) -> None:
     # Prepare arguments
     args = cmd.split()
     if not args:
-        logger.warning("Command is empty. Nothing to do.")
+        _logger.warning("Command is empty. Nothing to do.")
         return
 
     # Prepare environment
@@ -73,18 +69,18 @@ def run(project: project.Project, settings: settings.UserSettings, tool_uid: too
     work_dir = _prepare_work_dir(tool_uid)
 
     # Run tool
-    logger.info(f"Run compilation ...")
+    _logger.info(f"Run compilation ...")
     for cmd in tool_script.build:
-        logger.info(f"  {cmd}")
+        _logger.info(f"  {cmd}")
         _exec(cmd=cmd, cwd=work_dir, bin_dir=tool_settings.bin_dir, env=tool_settings.env)
 
-    logger.info(f"Run simulation ...")
+    _logger.info(f"Run simulation ...")
     for cmd in tool_script.sim:
-        logger.info(f"  {cmd}")
+        _logger.info(f"  {cmd}")
         _exec(cmd=cmd, cwd=work_dir, bin_dir=tool_settings.bin_dir, env=tool_settings.env)
 
     if waves:
-        logger.info(f"Show waves ...")
+        _logger.info(f"Show waves ...")
         for cmd in tool_script.waves:
-            logger.info(f"  {cmd}")
+            _logger.info(f"  {cmd}")
             _exec(cmd=cmd, cwd=work_dir, bin_dir=tool_settings.bin_dir, env=tool_settings.env)

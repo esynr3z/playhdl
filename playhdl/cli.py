@@ -9,7 +9,7 @@ from . import project
 from . import settings
 from . import runner
 
-logger = log.get_logger()
+_logger = log.get_logger()
 
 app_dir = Path.home().joinpath(".playhdl")
 user_settings_file = app_dir.joinpath("settings.json")
@@ -21,7 +21,7 @@ def _load_settings(settings_file: Path) -> settings.UserSettings:
     try:
         return settings.load(settings_file)
     except FileNotFoundError:
-        logger.error(f"Settings file '{settings_file}' was not found. Run 'setup' command to create it first.")
+        _logger.error(f"Settings file '{settings_file}' was not found. Run 'setup' command to create it first.")
         exit(1)
 
 
@@ -30,13 +30,13 @@ def _load_project(project_file: Path) -> project.Project:
     try:
         return project.load(project_file)
     except FileNotFoundError:
-        logger.error(f"Project file '{project_file}' was not found. Run 'init' command to create it first.")
+        _logger.error(f"Project file '{project_file}' was not found. Run 'init' command to create it first.")
         exit(1)
 
 
 def cmd_run(args: argparse.Namespace) -> None:
     """Invoke simulation in the current workspace"""
-    logger.debug(f"Execute 'cmd_run' with {args}")
+    _logger.debug(f"Execute 'cmd_run' with {args}")
 
     # Load user settings
     user_settings = _load_settings(user_settings_file)
@@ -47,38 +47,38 @@ def cmd_run(args: argparse.Namespace) -> None:
     # Run simulator
     try:
         runner.run(project, user_settings, args.tool, args.waves)
-    except (ValueError, RuntimeError) as e:
-        logger.error(str(e))
+    except (ValueError, RuntimeError, FileNotFoundError) as e:
+        _logger.error(str(e))
         exit(1)
 
 
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
-    logger.debug(f"Execute 'cmd_init' with {args}")
+    _logger.debug(f"Execute 'cmd_init' with {args}")
 
     # Load user settings
     user_settings = _load_settings(user_settings_file)
 
     # Generate code templates
-    source_files = templates.generate_templates(args.mode)
+    source_files = templates.generate(args.mode)
     for src in source_files:
         with utils.query_if_file_exists(args.query_force_yes):
-            templates.dump_template(src)
+            templates.dump(src)
 
     # Init project file
     with utils.query_if_file_exists(args.query_force_yes):
         try:
             project.init(project_file, args.mode, [f.filename for f in source_files], user_settings)
         except ValueError as e:
-            logger.error(str(e))
+            _logger.error(str(e))
             exit(1)
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
-    logger.debug(f"Execute 'cmd_setup' with {args}")
+    _logger.debug(f"Execute 'cmd_setup' with {args}")
     with utils.query_if_file_exists(args.query_force_yes):
-        settings.setup_user(app_dir, user_settings_file)
+        settings.setup(app_dir, user_settings_file)
 
 
 def parse_args():

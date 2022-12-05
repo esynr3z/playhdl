@@ -10,7 +10,7 @@ from . import settings
 from . import tools
 from . import utils
 
-logger = log.get_logger()
+_logger = log.get_logger()
 
 
 @dataclass
@@ -31,7 +31,7 @@ def init(
     user_settings: settings.UserSettings,
 ):
     available_tools = set(t.kind for t in user_settings.tools.values())
-    logger.debug(f"Available tools according user settings: {available_tools}")
+    _logger.debug(f"Available tools according user settings: {available_tools}")
 
     # Generate simulator scripts for the selected design mode
     tool_scripts: Dict[tools.ToolKind, tools.ToolScript] = {}
@@ -42,7 +42,7 @@ def init(
             pass
     if len(tool_scripts) == 0:
         raise ValueError(f"Can't find any suitable tool for the provided design mode '{design_kind}'")
-    logger.debug(f"Generated tool scripts for '{design_kind}': {list(tool_scripts.keys())}")
+    _logger.debug(f"Generated tool scripts for '{design_kind}': {list(tool_scripts.keys())}")
 
     # Create project descriptor
     project_tools: Dict[tools.ToolUid, tools.ToolScript] = {}
@@ -52,10 +52,10 @@ def init(
         except KeyError:
             pass
     project = Project(tools=project_tools)
-    logger.debug(f"Created project: {project}")
+    _logger.debug(f"Created project: {project}")
 
     # Dump project file
-    logger.info(f"Save project file to '{project_file}' ...")
+    _logger.info(f"Save project file to '{project_file}' ...")
     utils.write_file_aware_existance(
         project_file,
         lambda: dump(project_file, project),
@@ -65,13 +65,13 @@ def init(
 def dump(file: Path, project: Project) -> None:
     """Dump project to file"""
     utils.dump_json(file, dataclasses.asdict(project))
-    logger.info(f"Project was successfuly saved to '{file}'")
+    _logger.info(f"Project was successfuly saved to '{file}'")
 
 
 def load(file: Path) -> Project:
     """Load project from file"""
     data = utils.load_json(file)
     project = Project(**data)
-    logger.debug(f"Loaded project: {project}")
-    logger.info(f"Project was successfuly loaded from '{file}'")
+    _logger.debug(f"Loaded project: {project}")
+    _logger.info(f"Project was successfuly loaded from '{file}'")
     return project

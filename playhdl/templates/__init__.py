@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from .. import log
 from .. import utils
 
-logger = log.get_logger()
+_logger = log.get_logger()
 
 
 class DesignKind(utils.ExtendedEnum):
@@ -24,16 +24,16 @@ class TemplateDescriptor:
     content: str
 
 
-def generate_templates(design_kind: DesignKind) -> List[TemplateDescriptor]:
+def generate(design_kind: DesignKind) -> List[TemplateDescriptor]:
     """Get template files according to design kind"""
-    logger.info(f"Generate templates for '{design_kind}' design ...")
+    _logger.info(f"Generate templates for '{design_kind}' design ...")
     templates = _DesignTemplate.get_subclass_by_kind(design_kind)().generate()
     filenames = [t.filename for t in templates]
-    logger.info(f"  {' '.join(filenames)}")
+    _logger.info(f"  {' '.join(filenames)}")
     return templates
 
 
-def dump_template(template: TemplateDescriptor) -> None:
+def dump(template: TemplateDescriptor) -> None:
     """Save template to a disc"""
 
     def write_file(filepath: Path, content: str):
@@ -41,7 +41,7 @@ def dump_template(template: TemplateDescriptor) -> None:
             f.write(content)
 
     filepath = Path(template.filename)
-    logger.info(f"Save '{filepath}' to a disk ...")
+    _logger.info(f"Save '{filepath}' to a disk ...")
     utils.write_file_aware_existance(
         filepath,
         lambda: write_file(filepath, template.content),

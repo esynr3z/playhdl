@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 from . import log
 
-logger = log.get_logger()
+_logger = log.get_logger()
 
 
 def get_pkg_version() -> str:
@@ -63,19 +63,19 @@ def query_if_file_exists(force_yes=False):
     try:
         yield
     except FileExistsError as e:
-        logger.warning(e.args[0])  # Warn user with a provided message
+        _logger.warning(e.args[0])  # Warn user with a provided message
         if force_yes or input_query_yes_no():
             e.args[1]()  # Call lambda with a method that overwrites a file
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
     """Ask a yes/no question"""
-    logger.warning(f"{question} [y/n]")
+    _logger.warning(f"{question} [y/n]")
     while True:
         try:
             return distutils.util.strtobool(input().lower())  # type: ignore
         except ValueError:
-            logger.error("Usupported answer! Please type y/yes or n/no.")
+            _logger.error("Usupported answer! Please type y/yes or n/no.")
 
 
 class ExtendedEnum(str, Enum):
