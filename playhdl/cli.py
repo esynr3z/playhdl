@@ -5,7 +5,6 @@ from . import log
 from . import utils
 from . import templates
 from . import project
-from . import tools
 from . import settings
 
 logger = log.get_logger()
@@ -25,7 +24,11 @@ def cmd_init(args: argparse.Namespace) -> None:
     logger.debug(f"Execute 'cmd_init' with {args}")
 
     # Load user settings
-    user_settings = settings.load_user_settings(user_settings_file)
+    try:
+        user_settings = settings.load(user_settings_file)
+    except FileNotFoundError:
+        logger.error(f"Settings file '{user_settings_file}' was not found. Run 'setup' command to create it first.")
+        exit(1)
 
     # Generate code templates
     source_files = templates.generate_templates(args.mode)
@@ -33,7 +36,7 @@ def cmd_init(args: argparse.Namespace) -> None:
         with utils.query_if_file_exists(args.query_force_yes):
             templates.dump_template(src)
 
-    # Init session file
+    # Init project file
     with utils.query_if_file_exists(args.query_force_yes):
         try:
             project.init(session_file, args.mode, [f.filename for f in source_files], user_settings)

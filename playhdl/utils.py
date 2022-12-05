@@ -1,12 +1,11 @@
 import pkg_resources
 import os
-from typing import Dict, Callable, Dict, Any
+from typing import Dict, Callable, Dict
 from pathlib import Path
 from enum import Enum
 import json
 import distutils
 from contextlib import contextmanager
-from dataclasses import dataclass, is_dataclass
 
 
 from . import log

@@ -58,17 +58,17 @@ def init(
     logger.info(f"Save project file to '{project_file}' ...")
     utils.write_file_aware_existance(
         project_file,
-        lambda: dump_project(project_file, project),
+        lambda: dump(project_file, project),
     )
 
 
-def dump_project(file: Path, project: Project) -> None:
+def dump(file: Path, project: Project) -> None:
     """Dump project to file"""
     utils.dump_json(file, dataclasses.asdict(project))
     logger.info(f"Project was successfuly saved to '{file}'")
 
 
-def load_user_settings(file: Path) -> Project:
+def load(file: Path) -> Project:
     """Load project from file"""
     data = utils.load_json(file)
     project = Project(**data)

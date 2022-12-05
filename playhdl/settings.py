@@ -50,17 +50,17 @@ def setup_user(app_dir: Path, user_settings_file: Path) -> None:
     logger.info(f"Save settings to '{user_settings_file}' ...")
     utils.write_file_aware_existance(
         user_settings_file,
-        lambda: dump_user_settings(user_settings_file, user_settings),
+        lambda: dump(user_settings_file, user_settings),
     )
 
 
-def dump_user_settings(file: Path, settings: UserSettings) -> None:
+def dump(file: Path, settings: UserSettings) -> None:
     """Dump user settings to file"""
     utils.dump_json(file, dataclasses.asdict(settings))
     logger.info(f"Settings were successfuly dumped to '{file}'")
 
 
-def load_user_settings(file: Path) -> UserSettings:
+def load(file: Path) -> UserSettings:
     """Load user settings from file"""
     data = utils.load_json(file)
     settings = UserSettings(**data)
