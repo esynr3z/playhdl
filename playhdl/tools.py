@@ -58,6 +58,11 @@ class _Tool(ABC):
         """Get name of the basic executable"""
         raise NotImplementedError
 
+    @abstractclassmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
+        """Get supported design kinds for the tool"""
+        raise NotImplementedError
+
     @classmethod
     def get_subclass_by_kind(cls, tool_kind: ToolKind) -> Type[_Tool]:
         """Get template class according to design kind"""
@@ -80,12 +85,11 @@ class _Icarus(_Tool):
     """Icarus Verilog"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in (templates.DesignKind.verilog, templates.DesignKind.systemverilog):
+        if design_kind not in self.get_supported_design_kinds():
             raise ValueError(f"Icarus doesn't support provided design kind '{design_kind}'")
 
-        if design_kind == templates.DesignKind.verilog:
-            lang_ver = "-g2001"
-        elif design_kind == templates.DesignKind.systemverilog:
+        lang_ver = "-g2001"
+        if design_kind == templates.DesignKind.systemverilog:
             lang_ver = "-g2012"
 
         build_cmd = f"iverilog -Wall {lang_ver} {' '.join(self.patch_sources(sources))} -o tb.out"
@@ -93,6 +97,10 @@ class _Icarus(_Tool):
         waves_cmd = "gtkwave tb.vcd"
 
         return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[waves_cmd])
+
+    @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
+        return [templates.DesignKind.verilog, templates.DesignKind.systemverilog]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
@@ -107,7 +115,30 @@ class _Modelsim(_Tool):
     """Siemens (Mentor Grapthics) Modelsim"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        raise NotImplementedError
+        if design_kind not in self.get_supported_design_kinds():
+            raise ValueError(f"Modelsim doesn't support provided design kind '{design_kind}'")
+
+        build_cmds = ["vlib worklib", "vmap work worklib"]
+        for s in self.patch_sources(sources):
+            if design_kind == templates.DesignKind.verilog:
+                build_cmds.append(f"vlog {s}")
+            elif design_kind == templates.DesignKind.systemverilog:
+                build_cmds.append(f"vlog -sv {s}")
+            elif design_kind == templates.DesignKind.vhdl:
+                build_cmds.append(f"vcom -93 {s}")
+
+        sim_cmd = 'vsim -c worklib.tb -do "log -r *;run -all"'
+        waves_cmd = "vsim -view vsim.wlf"
+
+        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=[waves_cmd])
+
+    @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
+        return [
+            templates.DesignKind.verilog,
+            templates.DesignKind.systemverilog,
+            templates.DesignKind.vhdl,
+        ]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
@@ -122,6 +153,10 @@ class _Xcelium(_Tool):
     """Cadence Xcelium"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+        raise NotImplementedError
+
+    @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
         raise NotImplementedError
 
     @classmethod
@@ -140,6 +175,10 @@ class _Verilator(_Tool):
         raise NotImplementedError
 
     @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
+        raise NotImplementedError
+
+    @classmethod
     def get_kind(cls) -> ToolKind:
         return ToolKind.verilator
 
@@ -155,6 +194,10 @@ class _Vcs(_Tool):
         raise NotImplementedError
 
     @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
+        raise NotImplementedError
+
+    @classmethod
     def get_kind(cls) -> ToolKind:
         return ToolKind.vcs
 
@@ -167,6 +210,10 @@ class _Vivado(_Tool):
     """Xilinx Vivado"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+        raise NotImplementedError
+
+    @classmethod
+    def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
         raise NotImplementedError
 
     @classmethod
