@@ -15,7 +15,7 @@ logger = log.get_logger()
 class ToolSettings:
     kind: tools.ToolKind
     bin_dir: Path
-    env: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    env: Dict[str, str] = dataclasses.field(default_factory=dict)
 
 
 @dataclass

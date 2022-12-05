@@ -71,6 +71,10 @@ class _Tool(ABC):
         bin_dir = shutil.which(self.get_base_exe_name())
         return Path(bin_dir) if bin_dir else None
 
+    def patch_sources(self, sources: List[str]):
+        """Path paths to sources"""
+        return [f"../{s}" for s in sources]
+
 
 class _Icarus(_Tool):
     """Icarus Verilog"""
@@ -84,10 +88,11 @@ class _Icarus(_Tool):
         elif design_kind == templates.DesignKind.systemverilog:
             lang_ver = "-g2012"
 
-        build_cmd = f"iverilog -Wall {lang_ver} {' '.join(sources)} -o tb.out"
+        build_cmd = f"iverilog -Wall {lang_ver} {' '.join(self.patch_sources(sources))} -o tb.out"
         sim_cmd = "vvp tb.out"
+        waves_cmd = "gtkwave tb.vcd"
 
-        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[""])
+        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[waves_cmd])
 
     @classmethod
     def get_kind(cls) -> ToolKind:
