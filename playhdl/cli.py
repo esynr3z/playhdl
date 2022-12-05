@@ -30,11 +30,11 @@ def cmd_init(args: argparse.Namespace) -> None:
     # Generate code templates
     source_files = templates.generate_templates(args.mode)
     for src in source_files:
-        with utils.query_if_file_exists():
+        with utils.query_if_file_exists(args.query_force_yes):
             templates.dump_template(src)
 
     # Init session file
-    with utils.query_if_file_exists():
+    with utils.query_if_file_exists(args.query_force_yes):
         try:
             project.init(session_file, args.mode, [f.filename for f in source_files], user_settings)
         except ValueError as e:
@@ -45,7 +45,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     logger.debug(f"Execute 'cmd_setup' with {args}")
-    with utils.query_if_file_exists():
+    with utils.query_if_file_exists(args.query_force_yes):
         settings.setup_user(app_dir, user_settings_file)
 
 
@@ -68,6 +68,7 @@ add -h/--help argument to any command to get more information"""
         description=parser_descr,
         formatter_class=CustomFormatter,
     )
+    parser.add_argument("-y", dest="query_force_yes", action="store_true", help="answer 'yes' to all queries")
 
     subparsers = parser.add_subparsers(help="command to process", dest="command", required=True)
 
