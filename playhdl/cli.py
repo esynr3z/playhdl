@@ -34,6 +34,13 @@ def _load_project(project_file: Path) -> project.Project:
         exit(1)
 
 
+def _show_run_options(project_descriptor: project.Project) -> None:
+    # Show run options
+    _logger.info("You can run simulation using one of the options below:")
+    for uid in project_descriptor.tools:
+        _logger.info(f"  playhdl run {uid}")
+
+
 def cmd_run(args: argparse.Namespace) -> None:
     """Invoke simulation in the current workspace"""
     _logger.debug(f"Execute 'cmd_run' with {args}")
@@ -42,11 +49,15 @@ def cmd_run(args: argparse.Namespace) -> None:
     user_settings = _load_settings(user_settings_file)
 
     # Load project
-    project = _load_project(project_file)
+    project_descriptor = _load_project(project_file)
+
+    if not args.tool:
+        _show_run_options(project_descriptor)
+        return
 
     # Run simulator
     try:
-        runner.run(project, user_settings, args.tool, args.waves)
+        runner.run(project_descriptor, user_settings, args.tool, args.waves)
     except (ValueError, RuntimeError, FileNotFoundError) as e:
         _logger.error(str(e))
         exit(1)
@@ -72,6 +83,10 @@ def cmd_init(args: argparse.Namespace) -> None:
         except ValueError as e:
             _logger.error(str(e))
             exit(1)
+
+    # Show run options
+    project_descriptor = _load_project(project_file)
+    _show_run_options(project_descriptor)
 
 
 def cmd_setup(args: argparse.Namespace) -> None:
@@ -118,7 +133,7 @@ add -h/--help argument to any command to get more information"""
     parser_init.set_defaults(func=cmd_init)
 
     parser_run = subparsers.add_parser("run")
-    parser_run.add_argument("tool", type=tools.ToolUid, help="tool for simulation")
+    parser_run.add_argument("tool", nargs="?", type=tools.ToolUid, help="tool for simulation")
     parser_run.add_argument("--waves", action="store_true", help="open waves after simulation ends")
     parser_run.set_defaults(func=cmd_run)
 
