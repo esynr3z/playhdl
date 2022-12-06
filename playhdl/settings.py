@@ -29,7 +29,7 @@ class UserSettings:
                 self.tools[uid] = ToolSettings(**settings)
 
 
-def setup(app_dir: Path, user_settings_file: Path) -> None:
+def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
     """Create settings and application folder for a first time"""
     # Prepare application directory
     _logger.info(f"Create application home ...'{app_dir}'")
@@ -48,10 +48,8 @@ def setup(app_dir: Path, user_settings_file: Path) -> None:
 
     # Try to save settings to file
     _logger.info(f"Save settings to '{user_settings_file}' ...")
-    utils.write_file_aware_existance(
-        user_settings_file,
-        lambda: dump(user_settings_file, user_settings),
-    )
+    with utils.query_if_file_exists(user_settings_file, kwargs.get("query_force_yes", False)):
+        dump(user_settings_file, user_settings)
 
 
 def dump(file: Path, settings: UserSettings) -> None:

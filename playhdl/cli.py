@@ -73,16 +73,16 @@ def cmd_init(args: argparse.Namespace) -> None:
     # Generate code templates
     source_files = templates.generate(args.mode)
     for src in source_files:
-        with utils.query_if_file_exists(args.query_force_yes):
-            templates.dump(src)
+        templates.dump(src, query_force_yes=args.query_force_yes)
 
     # Init project file
-    with utils.query_if_file_exists(args.query_force_yes):
-        try:
-            project.init(project_file, args.mode, [f.filename for f in source_files], user_settings)
-        except ValueError as e:
-            _logger.error(str(e))
-            exit(1)
+    try:
+        project_descriptor = project.create(project_file, args.mode, [f.filename for f in source_files], user_settings)
+        _logger.info(f"Save project file to '{project_file}' ...")
+        project.dump(project_file, project_descriptor, query_force_yes=args.query_force_yes)
+    except ValueError as e:
+        _logger.error(str(e))
+        exit(1)
 
     # Show run options
     project_descriptor = _load_project(project_file)
@@ -92,8 +92,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 def cmd_setup(args: argparse.Namespace) -> None:
     """Setup configuration file with avaliable EDA"""
     _logger.debug(f"Execute 'cmd_setup' with {args}")
-    with utils.query_if_file_exists(args.query_force_yes):
-        settings.setup(app_dir, user_settings_file)
+    settings.setup(app_dir, user_settings_file, query_force_yes=args.query_force_yes)
 
 
 def parse_args():

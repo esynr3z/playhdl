@@ -47,25 +47,13 @@ def load_json(file: Path) -> Dict:
         return json.load(f)
 
 
-def write_file_aware_existance(filepath: Path, write_func: Callable):
-    """Write file to the disk if it doesn't exist and raise exception otherwise"""
+@contextmanager
+def query_if_file_exists(filepath: Path, force_yes: bool = False):
     if filepath.is_file():
         # Provide message and lamda with dump method in case caller want to query user for further steps
-        raise FileExistsError(
-            f"File '{filepath}' already exists. It will be overwriten!",
-            write_func,
-        )
-    write_func()
-
-
-@contextmanager
-def query_if_file_exists(force_yes=False):
-    try:
-        yield
-    except FileExistsError as e:
-        _logger.warning(e.args[0])  # Warn user with a provided message
+        _logger.warning(f"File '{filepath}' already exists. It will be overwriten!")
         if force_yes or input_query_yes_no():
-            e.args[1]()  # Call lambda with a method that overwrites a file
+            yield
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:

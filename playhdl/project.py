@@ -24,12 +24,11 @@ class Project:
                 self.tools[uid] = tools.ToolScript(**script)
 
 
-def init(
-    project_file: Path,
-    design_kind: templates.DesignKind,
-    sources: List[str],
-    user_settings: settings.UserSettings,
-):
+def create(
+    project_file: Path, design_kind: templates.DesignKind, sources: List[str], user_settings: settings.UserSettings
+) -> Project:
+    _logger.info(f"Create project for '{design_kind}' design ...")
+
     available_tools = set(t.kind for t in user_settings.tools.values())
     _logger.debug(f"Available tools according user settings: {available_tools}")
 
@@ -54,17 +53,13 @@ def init(
     project = Project(tools=project_tools)
     _logger.debug(f"Created project: {project}")
 
-    # Dump project file
-    _logger.info(f"Save project file to '{project_file}' ...")
-    utils.write_file_aware_existance(
-        project_file,
-        lambda: dump(project_file, project),
-    )
+    return project
 
 
-def dump(file: Path, project: Project) -> None:
+def dump(file: Path, project: Project, **kwargs) -> None:
     """Dump project to file"""
-    utils.dump_json(file, dataclasses.asdict(project))
+    with utils.query_if_file_exists(file, kwargs.get("query_force_yes", False)):
+        utils.dump_json(file, dataclasses.asdict(project))
     _logger.info(f"Project was successfuly saved to '{file}'")
 
 

@@ -33,19 +33,13 @@ def generate(design_kind: DesignKind) -> List[TemplateDescriptor]:
     return templates
 
 
-def dump(template: TemplateDescriptor) -> None:
+def dump(template: TemplateDescriptor, **kwargs) -> None:
     """Save template to a disc"""
-
-    def write_file(filepath: Path, content: str):
-        with filepath.open("w") as f:
-            f.write(content)
-
     filepath = Path(template.filename)
     _logger.info(f"Save '{filepath}' to a disk ...")
-    utils.write_file_aware_existance(
-        filepath,
-        lambda: write_file(filepath, template.content),
-    )
+    with utils.query_if_file_exists(filepath, kwargs.get("query_force_yes", False)):
+        with filepath.open("w") as f:
+            f.write(template.content)
 
 
 class _DesignTemplate(ABC):
