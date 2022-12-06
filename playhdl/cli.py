@@ -125,7 +125,7 @@ add -h/--help argument to any command to get more information"""
     parser_init.add_argument(
         "--mode",
         type=templates.DesignKind,
-        default=templates.DesignKind.systemverilog,
+        default=templates.DesignKind.sv,
         choices=list(templates.DesignKind),
         help="design and testbench mode",
     )

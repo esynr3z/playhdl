@@ -89,7 +89,7 @@ class _Icarus(_Tool):
             raise ValueError(f"Icarus doesn't support provided design kind '{design_kind}'")
 
         lang_ver = "-g2001"
-        if design_kind == templates.DesignKind.systemverilog:
+        if design_kind == templates.DesignKind.sv:
             lang_ver = "-g2012"
 
         build_cmd = f"iverilog -Wall {lang_ver} {' '.join(self.patch_sources(sources))} -o tb.out"
@@ -100,7 +100,7 @@ class _Icarus(_Tool):
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        return [templates.DesignKind.verilog, templates.DesignKind.systemverilog]
+        return [templates.DesignKind.verilog, templates.DesignKind.sv]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
@@ -122,10 +122,8 @@ class _Modelsim(_Tool):
         for s in self.patch_sources(sources):
             if design_kind == templates.DesignKind.verilog:
                 build_cmds.append(f"vlog {s}")
-            elif design_kind == templates.DesignKind.systemverilog:
+            elif design_kind == templates.DesignKind.sv:
                 build_cmds.append(f"vlog -sv {s}")
-            elif design_kind == templates.DesignKind.vhdl:
-                build_cmds.append(f"vcom -93 {s}")
 
         sim_cmd = 'vsim -c worklib.tb -do "log -r *;run -all"'
         waves_cmd = "vsim -view vsim.wlf"
@@ -134,11 +132,7 @@ class _Modelsim(_Tool):
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        return [
-            templates.DesignKind.verilog,
-            templates.DesignKind.systemverilog,
-            templates.DesignKind.vhdl,
-        ]
+        return [templates.DesignKind.verilog, templates.DesignKind.sv]
 
     @classmethod
     def get_kind(cls) -> ToolKind:

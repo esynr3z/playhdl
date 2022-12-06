@@ -13,9 +13,8 @@ _logger = log.get_logger()
 
 class DesignKind(utils.ExtendedEnum):
     verilog = enum.auto()
-    systemverilog = enum.auto()
-    systemverilog_uvm12 = enum.auto()
-    vhdl = enum.auto()
+    sv = enum.auto()
+    sv_uvm12 = enum.auto()
 
 
 @dataclass
@@ -94,4 +93,4 @@ class _SystemVerilog(_DesignTemplate):
     @classmethod
     def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
-        return DesignKind.systemverilog
+        return DesignKind.sv
