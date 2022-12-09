@@ -35,7 +35,7 @@ def _load_project(project_file: Path) -> project.Project:
 
 
 def _show_run_options(project_descriptor: project.Project) -> None:
-    # Show run options
+    """Show run options"""
     _logger.info("You can run simulation using one of the options below:")
     for uid in project_descriptor.tools:
         _logger.info(f"  playhdl run {uid}")
@@ -63,9 +63,20 @@ def cmd_run(args: argparse.Namespace) -> None:
         exit(1)
 
 
+def _show_init_options() -> None:
+    """Show init options"""
+    _logger.info("You can initialize project using one of the options below:")
+    for kind in templates.DesignKind:
+        _logger.info(f"  playhdl init {kind}")
+
+
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize workspace in the current folder"""
     _logger.debug(f"Execute 'cmd_init' with {args}")
+
+    if not args.mode:
+        _show_init_options()
+        return
 
     # Load user settings
     user_settings = _load_settings(user_settings_file)
@@ -123,9 +134,9 @@ add -h/--help argument to any command to get more information"""
 
     parser_init = subparsers.add_parser("init", formatter_class=CustomFormatter)
     parser_init.add_argument(
-        "--mode",
+        "mode",
+        nargs="?",
         type=templates.DesignKind,
-        default=templates.DesignKind.sv,
         choices=list(templates.DesignKind),
         help="design and testbench mode",
     )
