@@ -166,11 +166,24 @@ class _Verilator(_Tool):
     """Veripool Verilator"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        raise NotImplementedError
+        if design_kind not in self.get_supported_design_kinds():
+            raise ValueError(f"Verilator doesn't support provided design kind '{design_kind}'")
+
+        lang_ver = "+verilog2001ext+v"
+        if design_kind == templates.DesignKind.sv:
+            lang_ver = "+systemverilogext+sv"
+        build_cmd = f"verilator {lang_ver} --trace --binary -j 0 {' '.join(self.patch_sources(sources))}"
+        sim_cmd = "./obj_dir/Vtb"
+        waves_cmd = "gtkwave tb.vcd"
+
+        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[waves_cmd])
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        raise NotImplementedError
+        return [
+            templates.DesignKind.verilog,
+            templates.DesignKind.sv,
+        ]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
@@ -220,12 +233,12 @@ class _Vivado(_Tool):
             "xsim tbsim --wdb tb.wdb --t sim.tcl",
         ]
 
-        waves_cmd = [
+        waves_cmds = [
             'echo "open_wave_database tb.wdb" > waves.tcl',
             "vivado -source waves.tcl",
         ]
 
-        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmd)
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
