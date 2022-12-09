@@ -220,13 +220,19 @@ class _Vivado(_Tool):
         if design_kind not in self.get_supported_design_kinds():
             raise ValueError(f"Vivado doesn't support provided design kind '{design_kind}'")
 
+        uvm_vlog_opts = ""
+        uvm_elab_opts = ""
+        if design_kind == templates.DesignKind.sv_uvm12:
+            uvm_vlog_opts = "-uvm_version 1.2 -L uvm"
+            uvm_elab_opts = "-L uvm"
+
         build_cmds = []
         for s in self.patch_sources(sources):
             if design_kind == templates.DesignKind.verilog:
                 build_cmds.append(f"xvlog -work worklib {s}")
-            elif design_kind == templates.DesignKind.sv:
-                build_cmds.append(f"xvlog -work worklib -sv {s}")
-        build_cmds.append("xelab worklib.tb --debug all -s tbsim")
+            elif design_kind in [templates.DesignKind.sv, templates.DesignKind.sv_uvm12]:
+                build_cmds.append(f"xvlog -work worklib -sv {uvm_vlog_opts} {s}")
+        build_cmds.append(f"xelab worklib.tb {uvm_elab_opts} --debug all -s tbsim")
 
         sim_cmds = [
             'echo "log_wave -recursive *;run all;quit" > sim.tcl',

@@ -94,3 +94,17 @@ class _SystemVerilog(_DesignTemplate):
     def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
         return DesignKind.sv
+
+
+class _SystemVerilogUvm12(_DesignTemplate):
+    """SystemVerilog UVM 1.2 design template"""
+
+    def generate(self, **kwargs) -> List[TemplateDescriptor]:
+        """Generate design template files"""
+        content = self._read_template_file("tb_uvm12.sv")
+        return [TemplateDescriptor("tb_uvm12.sv", content)]
+
+    @classmethod
+    def get_kind(cls) -> DesignKind:
+        """Get kind of the template"""
+        return DesignKind.sv_uvm12

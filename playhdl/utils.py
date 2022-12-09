@@ -54,6 +54,8 @@ def query_if_file_exists(filepath: Path, force_yes: bool = False):
         _logger.warning(f"File '{filepath}' already exists. It will be overwriten!")
         if force_yes or input_query_yes_no():
             yield
+    else:
+        yield
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
