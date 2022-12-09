@@ -204,11 +204,36 @@ class _Vivado(_Tool):
     """Xilinx Vivado"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        raise NotImplementedError
+        if design_kind not in self.get_supported_design_kinds():
+            raise ValueError(f"Vivado doesn't support provided design kind '{design_kind}'")
+
+        build_cmds = []
+        for s in self.patch_sources(sources):
+            if design_kind == templates.DesignKind.verilog:
+                build_cmds.append(f"xvlog -work worklib {s}")
+            elif design_kind == templates.DesignKind.sv:
+                build_cmds.append(f"xvlog -work worklib -sv {s}")
+        build_cmds.append("xelab worklib.tb --debug all -s tbsim")
+
+        sim_cmds = [
+            'echo "log_wave -recursive *;run all;quit" > sim.tcl',
+            "xsim tbsim --wdb tb.wdb --t sim.tcl",
+        ]
+
+        waves_cmd = [
+            'echo "open_wave_database tb.wdb" > waves.tcl',
+            "vivado -source waves.tcl",
+        ]
+
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmd)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        raise NotImplementedError
+        return [
+            templates.DesignKind.verilog,
+            templates.DesignKind.sv,
+            templates.DesignKind.sv_uvm12,
+        ]
 
     @classmethod
     def get_kind(cls) -> ToolKind:

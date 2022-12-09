@@ -7,18 +7,18 @@ class _CustomFormatter(logging.Formatter):
     """Formatter based on https://stackoverflow.com/a/56944256"""
 
     grey = "\x1b[38;20m"
+    cyan = "\x1b[34;20m"
     green = "\x1b[32;20m"
     yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"
     bold_red = "\x1b[31;1m"
     reset = "\x1b[0m"
-    generic_format = "%(levelname)s: %(message)s"
-    info_format = "%(message)s"
-    debug_format = "%(levelname)s: [%(filename)s:%(lineno)d] %(message)s"
+    generic_format = "[%(name)s][%(levelname)s] %(message)s"
+    debug_format = "[%(name)s][%(levelname)s][%(filename)s:%(lineno)d] %(message)s"
 
     formats = {
         logging.DEBUG: green + debug_format + reset,
-        logging.INFO: grey + info_format + reset,
+        logging.INFO: cyan + generic_format + reset,
         logging.WARNING: yellow + generic_format + reset,
         logging.ERROR: red + generic_format + reset,
         logging.CRITICAL: bold_red + generic_format + reset,

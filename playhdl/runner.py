@@ -5,7 +5,6 @@ import subprocess
 import os
 import shutil
 import sys
-import shlex
 
 from . import log
 from . import settings
@@ -32,9 +31,7 @@ def _prepare_work_dir(tool_uid: tools.ToolUid) -> Path:
 
 def _exec(cmd: str, cwd: Path, bin_dir: Path, env: Dict[str, str]) -> None:
     """Execute system process"""
-    # Prepare arguments
-    args = shlex.split(cmd)  # shlex preserves quotes substrings
-    if not args:
+    if not cmd:
         _logger.warning("Command is empty. Nothing to do.")
         return
 
@@ -45,11 +42,12 @@ def _exec(cmd: str, cwd: Path, bin_dir: Path, env: Dict[str, str]) -> None:
 
     # Run process
     kwargs = {
-        "args": args,
+        "args": cmd,
         "cwd": cwd,
         "env": os.environ.copy(),
         "stdout": sys.stdout,
         "stderr": subprocess.STDOUT,
+        "shell": True,
     }
     proc = subprocess.run(**kwargs)
     if proc.returncode != 0:
