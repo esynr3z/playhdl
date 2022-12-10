@@ -12,22 +12,14 @@ _logger = log.get_logger()
 
 
 @dataclass
-class ToolSettings:
-    kind: tools.ToolKind
-    bin_dir: Path
-    env: Dict[str, str] = dataclasses.field(default_factory=dict)
-    extras: Dict[str, Any] = dataclasses.field(default_factory=dict)
-
-
-@dataclass
 class UserSettings:
-    tools: Dict[tools.ToolUid, ToolSettings] = dataclasses.field(default_factory=dict)
+    tools: Dict[tools.ToolUid, tools.ToolSettings] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self):
         for uid, settings in self.tools.items():
             # dataclass can't handle nesting, so deserealization has to be done mannualy
             if isinstance(settings, dict):
-                self.tools[uid] = ToolSettings(**settings)
+                self.tools[uid] = tools.ToolSettings(**settings)
 
 
 def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
@@ -44,7 +36,7 @@ def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
         bin_dir = tools.find_tool_dir(t)
         _logger.info(f"  {t}: {bin_dir}")
         if bin_dir:
-            tool_pool[t] = ToolSettings(kind=t, bin_dir=bin_dir)
+            tool_pool[t] = tools.ToolSettings(kind=t, bin_dir=bin_dir)
     user_settings = UserSettings(tools=tool_pool)
 
     # Try to save settings to file

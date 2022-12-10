@@ -71,7 +71,7 @@ def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
 class ExtendedEnum(str, Enum):
     def _generate_next_value_(name, start, count, last_values):
         """This uses enumeration name as a string value for auto() call"""
-        return name
+        return name.lower()
 
     def __str__(self):
         return self.value

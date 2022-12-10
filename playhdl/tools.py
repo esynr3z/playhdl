@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Any, Dict
 from pathlib import Path
+import dataclasses
 from dataclasses import dataclass
 import enum
 import shutil
@@ -11,13 +12,21 @@ from . import utils
 from . import templates
 
 
+@dataclass
+class ToolSettings:
+    kind: ToolKind
+    bin_dir: Path
+    env: Dict[str, str] = dataclasses.field(default_factory=dict)
+    extras: Dict[str, Any] = dataclasses.field(default_factory=dict)
+
+
 class ToolKind(utils.ExtendedEnum):
-    modelsim = enum.auto()
-    xcelium = enum.auto()
-    verilator = enum.auto()
-    icarus = enum.auto()
-    vcs = enum.auto()
-    vivado = enum.auto()
+    MODELSIM = enum.auto()
+    XCELIUM = enum.auto()
+    VERILATOR = enum.auto()
+    ICARUS = enum.auto()
+    VCS = enum.auto()
+    VIVADO = enum.auto()
 
 
 @dataclass
@@ -32,16 +41,25 @@ ToolUid = str
 
 def find_tool_dir(tool_kind: ToolKind) -> Optional[Path]:
     """Try to find a directory with executables for the provided tool"""
-    return _Tool.get_subclass_by_kind(tool_kind)().find_bin_dir()
+    return _Tool.get_subclass_by_kind(tool_kind).find_bin_dir()
 
 
-def generate_script(tool_kind: ToolKind, design_kind: templates.DesignKind, sources: List[str]) -> ToolScript:
+def generate_script(settings: ToolSettings, design_kind: templates.DesignKind, sources: List[str]) -> ToolScript:
     """Generate script for the provided tool and design"""
-    return _Tool.get_subclass_by_kind(tool_kind)().generate_script(design_kind, sources)
+    return _Tool.get_subclass_by_kind(settings.kind)(settings).generate_script(design_kind, sources)
 
 
 class _Tool(ABC):
     """Generic tool"""
+
+    @abstractmethod
+    def __init__(self, settings: ToolSettings):
+        self.settings = settings
+        if self.settings.kind != self.get_kind():
+            raise RuntimeError(
+                f"Provided tool kind '{self.settings.kind}' within settings "
+                f"doesn't match with expected value of '{self.get_kind()}'"
+            )
 
     @abstractmethod
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
@@ -65,38 +83,54 @@ class _Tool(ABC):
 
     @classmethod
     def get_subclass_by_kind(cls, tool_kind: ToolKind) -> Type[_Tool]:
-        """Get template class according to design kind"""
+        """Get template class according to tool kind"""
         for cls in _Tool.__subclasses__():
             if cls.get_kind() == tool_kind:
                 return cls
         raise ValueError(f"Can't find tool class for tool_kind={tool_kind}")
 
-    def find_bin_dir(self) -> Optional[Path]:
+    @classmethod
+    def find_bin_dir(cls) -> Optional[Path]:
         """Try to find a directory with executables for the provided tool"""
-        bin_dir = shutil.which(self.get_base_exe_name())
+        bin_dir = shutil.which(cls.get_base_exe_name())
         return Path(bin_dir) if bin_dir else None
 
-    def patch_sources(self, sources: List[str]):
-        """Path paths to sources"""
+    @classmethod
+    def _validate_design_kind(cls, design_kind: templates.DesignKind):
+        """Check that this design kind is supported by the tool"""
+        if design_kind not in cls.get_supported_design_kinds():
+            raise ValueError(f"{cls.get_kind()} doesn't support provided design kind '{design_kind}'")
+
+    @classmethod
+    def _patch_sources(cls, sources: List[str]):
+        """Patch paths to sources"""
         return [f"../{s}" for s in sources]
+
+    @classmethod
+    def _stringify_sources(cls, sources: List[str], separator: str = " "):
+        """Convert list of sources to a string"""
+        return separator.join(sources)
 
 
 class _Icarus(_Tool):
     """Icarus Verilog"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"Icarus doesn't support provided design kind '{design_kind}'")
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
 
-        lang_ver = "-g2001"
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+        self._validate_design_kind(design_kind)
+
+        lang_ver = "-g2001"  # verilog by default
         if design_kind == templates.DesignKind.sv:
             lang_ver = "-g2012"
 
-        build_cmd = f"iverilog -Wall {lang_ver} {' '.join(self.patch_sources(sources))} -o tb.out"
-        sim_cmd = "vvp tb.out"
-        waves_cmd = "gtkwave tb.vcd"
+        sources_opts = self._stringify_sources(self._patch_sources(sources))
+        build_cmds = [f"iverilog -Wall {lang_ver} {sources_opts} -o tb.out"]
+        sim_cmds = ["vvp tb.out"]
+        waves_cmds = ["gtkwave tb.vcd"]
 
-        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[waves_cmd])
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
@@ -104,7 +138,7 @@ class _Icarus(_Tool):
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.icarus
+        return ToolKind.ICARUS
 
     @classmethod
     def get_base_exe_name(cls) -> str:
@@ -114,21 +148,25 @@ class _Icarus(_Tool):
 class _Modelsim(_Tool):
     """Siemens (Mentor Grapthics) Modelsim"""
 
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
+
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"Modelsim doesn't support provided design kind '{design_kind}'")
+        self._validate_design_kind(design_kind)
+
+        vlog_opts = ""
+        if design_kind == templates.DesignKind.sv:
+            vlog_opts = "-sv"
 
         build_cmds = ["vlib worklib", "vmap work worklib"]
-        for s in self.patch_sources(sources):
-            if design_kind == templates.DesignKind.verilog:
-                build_cmds.append(f"vlog {s}")
-            elif design_kind == templates.DesignKind.sv:
-                build_cmds.append(f"vlog -sv {s}")
+        for s in self._patch_sources(sources):
+            if design_kind in (templates.DesignKind.verilog, templates.DesignKind.sv):
+                build_cmds.append(f"vlog {vlog_opts} {s}")
 
-        sim_cmd = 'vsim -c worklib.tb -do "log -r *;run -all"'
-        waves_cmd = "vsim -view vsim.wlf"
+        sim_cmds = ['vsim -c worklib.tb -do "log -r *;run -all"']
+        waves_cmds = ["vsim -view vsim.wlf"]
 
-        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=[waves_cmd])
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
@@ -136,7 +174,7 @@ class _Modelsim(_Tool):
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.modelsim
+        return ToolKind.MODELSIM
 
     @classmethod
     def get_base_exe_name(cls) -> str:
@@ -146,26 +184,30 @@ class _Modelsim(_Tool):
 class _Xcelium(_Tool):
     """Cadence Xcelium"""
 
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
+
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"Xcelium doesn't support provided design kind '{design_kind}'")
+        self._validate_design_kind(design_kind)
+
+        vlog_opts = ""
+        if design_kind == templates.DesignKind.sv:
+            vlog_opts = "-sv"
 
         build_cmds = []
-        for s in self.patch_sources(sources):
-            if design_kind == templates.DesignKind.verilog:
-                build_cmds.append(f"xmvlog {s}")
-            elif design_kind == templates.DesignKind.sv:
-                build_cmds.append(f"xmvlog -sv {s}")
+        for s in self._patch_sources(sources):
+            if design_kind in (templates.DesignKind.verilog, templates.DesignKind.sv):
+                build_cmds.append(f"xmvlog {vlog_opts} {s}")
         build_cmds.append("xmelab -access +rwc -snapshot tbsim tb")
 
-        sim_cmd = "xmsim tbsim"
+        sim_cmds = ["xmsim tbsim"]
 
         waves_cmds = [
             'echo "database open -overwrite tb.vcd" > waves.cmd',
             "simvision -input waves.cmd -waves",
         ]
 
-        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=waves_cmds)
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
@@ -173,7 +215,7 @@ class _Xcelium(_Tool):
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.xcelium
+        return ToolKind.XCELIUM
 
     @classmethod
     def get_base_exe_name(cls) -> str:
@@ -183,29 +225,30 @@ class _Xcelium(_Tool):
 class _Verilator(_Tool):
     """Veripool Verilator"""
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"Verilator doesn't support provided design kind '{design_kind}'")
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
 
-        lang_ver = "+verilog2001ext+v"
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+        self._validate_design_kind(design_kind)
+
+        lang_ver = "+verilog2001ext+v"  # verilog by default
         if design_kind == templates.DesignKind.sv:
             lang_ver = "+systemverilogext+sv"
-        build_cmd = f"verilator {lang_ver} --trace --binary -j 0 {' '.join(self.patch_sources(sources))}"
-        sim_cmd = "./obj_dir/Vtb"
-        waves_cmd = "gtkwave tb.vcd"
 
-        return ToolScript(build=[build_cmd], sim=[sim_cmd], waves=[waves_cmd])
+        sources_opts = self._stringify_sources(self._patch_sources(sources))
+        build_cmds = [f"verilator {lang_ver} --trace --binary -j 0 {sources_opts}"]
+        sim_cmds = ["./obj_dir/Vtb"]
+        waves_cmds = ["gtkwave tb.vcd"]
+
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        return [
-            templates.DesignKind.verilog,
-            templates.DesignKind.sv,
-        ]
+        return [templates.DesignKind.verilog, templates.DesignKind.sv]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.verilator
+        return ToolKind.VERILATOR
 
     @classmethod
     def get_base_exe_name(cls) -> str:
@@ -215,28 +258,34 @@ class _Verilator(_Tool):
 class _Vcs(_Tool):
     """Synopsys VCS"""
 
+    class _GuiKind(utils.ExtendedEnum):
+        DVE = enum.auto()
+        VERDI = enum.auto()
+
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
+        self.gui = self._GuiKind(settings.extras.get("gui", "verdi"))
+
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"VCS doesn't support provided design kind '{design_kind}'")
+        self._validate_design_kind(design_kind)
 
-        design_opts = ""
+        vlog_opts = ""
         if design_kind == templates.DesignKind.sv:
-            design_opts = "-sverilog"
+            vlog_opts = "-sverilog"
         elif design_kind == templates.DesignKind.sv_uvm12:
-            design_opts = "-sverilog -ntb_opts uvm-1.2"
+            vlog_opts = "-sverilog -ntb_opts uvm-1.2"
 
-        build_cmds = [
-            f"vcs -full64 {design_opts} -debug_acc+all +vcs+vcdpluson +vcs+fsdbon {' '.join(self.patch_sources(sources))}"
-        ]
+        sources_opts = self._stringify_sources(self._patch_sources(sources))
+        build_cmds = [f"vcs -full64 {vlog_opts} -debug_acc+all +vcs+vcdpluson +vcs+fsdbon {sources_opts}"]
 
-        sim_cmd = "./simv"
+        sim_cmds = ["./simv"]
 
-        waves_cmds = [
-            "dve -vpd vcdplus.vpd",
-            "verdi -ssf novas.fsdb",
-        ]
+        if self.gui == self._GuiKind.VERDI:
+            waves_cmds = ["verdi -ssf novas.fsdb"]
+        else:
+            waves_cmds = ["dve -vpd vcdplus.vpd"]
 
-        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=waves_cmds)
+        return ToolScript(build=build_cmds, sim=sim_cmds, waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
@@ -248,7 +297,7 @@ class _Vcs(_Tool):
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.vcs
+        return ToolKind.VCS
 
     @classmethod
     def get_base_exe_name(cls) -> str:
@@ -258,9 +307,11 @@ class _Vcs(_Tool):
 class _Vivado(_Tool):
     """Xilinx Vivado"""
 
+    def __init__(self, settings: ToolSettings):
+        super().__init__(settings)
+
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        if design_kind not in self.get_supported_design_kinds():
-            raise ValueError(f"Vivado doesn't support provided design kind '{design_kind}'")
+        self._validate_design_kind(design_kind)
 
         uvm_vlog_opts = ""
         uvm_elab_opts = ""
@@ -269,7 +320,7 @@ class _Vivado(_Tool):
             uvm_elab_opts = "-L uvm"
 
         build_cmds = []
-        for s in self.patch_sources(sources):
+        for s in self._patch_sources(sources):
             if design_kind == templates.DesignKind.verilog:
                 build_cmds.append(f"xvlog -work worklib {s}")
             elif design_kind in [templates.DesignKind.sv, templates.DesignKind.sv_uvm12]:
@@ -298,7 +349,7 @@ class _Vivado(_Tool):
 
     @classmethod
     def get_kind(cls) -> ToolKind:
-        return ToolKind.vivado
+        return ToolKind.VIVADO
 
     @classmethod
     def get_base_exe_name(cls) -> str:
