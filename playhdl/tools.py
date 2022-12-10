@@ -216,11 +216,35 @@ class _Vcs(_Tool):
     """Synopsys VCS"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        raise NotImplementedError
+        if design_kind not in self.get_supported_design_kinds():
+            raise ValueError(f"VCS doesn't support provided design kind '{design_kind}'")
+
+        design_opts = ""
+        if design_kind == templates.DesignKind.sv:
+            design_opts = "-sverilog"
+        elif design_kind == templates.DesignKind.sv_uvm12:
+            design_opts = "-sverilog -ntb_opts uvm-1.2"
+
+        build_cmds = [
+            f"vcs -full64 {design_opts} -debug_acc+all +vcs+vcdpluson +vcs+fsdbon {' '.join(self.patch_sources(sources))}"
+        ]
+
+        sim_cmd = "./simv"
+
+        waves_cmds = [
+            "dve -vpd vcdplus.vpd",
+            "verdi -ssf novas.fsdb",
+        ]
+
+        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        raise NotImplementedError
+        return [
+            templates.DesignKind.verilog,
+            templates.DesignKind.sv,
+            templates.DesignKind.sv_uvm12,
+        ]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
