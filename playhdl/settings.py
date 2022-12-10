@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict
+from typing import Dict, Any
 from pathlib import Path
 import dataclasses
 from dataclasses import dataclass
@@ -16,6 +16,7 @@ class ToolSettings:
     kind: tools.ToolKind
     bin_dir: Path
     env: Dict[str, str] = dataclasses.field(default_factory=dict)
+    extras: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 @dataclass

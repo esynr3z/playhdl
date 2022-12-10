@@ -147,11 +147,29 @@ class _Xcelium(_Tool):
     """Cadence Xcelium"""
 
     def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
-        raise NotImplementedError
+        if design_kind not in self.get_supported_design_kinds():
+            raise ValueError(f"Xcelium doesn't support provided design kind '{design_kind}'")
+
+        build_cmds = []
+        for s in self.patch_sources(sources):
+            if design_kind == templates.DesignKind.verilog:
+                build_cmds.append(f"xmvlog {s}")
+            elif design_kind == templates.DesignKind.sv:
+                build_cmds.append(f"xmvlog -sv {s}")
+        build_cmds.append("xmelab -access +rwc -snapshot tbsim tb")
+
+        sim_cmd = "xmsim tbsim"
+
+        waves_cmds = [
+            'echo "database open -overwrite tb.vcd" > waves.cmd',
+            "simvision -input waves.cmd -waves",
+        ]
+
+        return ToolScript(build=build_cmds, sim=[sim_cmd], waves=waves_cmds)
 
     @classmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
-        raise NotImplementedError
+        return [templates.DesignKind.verilog, templates.DesignKind.sv]
 
     @classmethod
     def get_kind(cls) -> ToolKind:
