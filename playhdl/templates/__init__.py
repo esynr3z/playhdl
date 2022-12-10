@@ -15,6 +15,7 @@ class DesignKind(utils.ExtendedEnum):
     verilog = enum.auto()
     sv = enum.auto()
     sv_uvm12 = enum.auto()
+    vhdl = enum.auto()
 
 
 @dataclass

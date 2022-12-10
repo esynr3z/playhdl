@@ -49,6 +49,30 @@ def generate_script(settings: ToolSettings, design_kind: templates.DesignKind, s
     return _Tool.get_subclass_by_kind(settings.kind)(settings).generate_script(design_kind, sources)
 
 
+def get_compatibility_text_table() -> str:
+    """Create text table with tool kinds vs design kind compatibility"""
+    col_full_w = 15
+    col_text_w = col_full_w - 2
+
+    design_kinds_str = [f"{k.value:^{col_text_w}}" for k in templates.DesignKind]
+    header = f"| {'':>{col_text_w}} | {' | '.join(design_kinds_str)}" + " |"
+
+    col_dashes = "-" * col_text_w
+    divider = f"| {col_dashes} | {' | '.join([col_dashes] * len(design_kinds_str))}" + " |"
+
+    rows = []
+    for tool in ToolKind:
+        tool_cls = _Tool.get_subclass_by_kind(tool)
+        tool_col = f"{tool.value:>{col_text_w}}"
+        compat_cols = []
+        for design in templates.DesignKind:
+            is_compatible = "X" if design in tool_cls.get_supported_design_kinds() else ""
+            compat_cols.append(f"{is_compatible:^{col_text_w}}")
+        rows.append(f"| {tool_col} | {' | '.join(compat_cols)}" + " |")
+
+    return "\n".join([header, divider] + rows)
+
+
 class _Tool(ABC):
     """Generic tool"""
 

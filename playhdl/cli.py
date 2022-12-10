@@ -106,12 +106,26 @@ def cmd_setup(args: argparse.Namespace) -> None:
     settings.setup(app_dir, user_settings_file, query_force_yes=args.query_force_yes)
 
 
+def cmd_info(args: argparse.Namespace) -> None:
+    """Print information about tools and configuration"""
+    _logger.debug(f"Execute 'cmd_info' with {args}")
+    user_settings = _load_settings(user_settings_file)
+
+    available_tools = []
+    for uid, settings in user_settings.tools.items():
+        available_tools.append(f"{uid:>15}: {settings.bin_dir}")
+    newline = "\n"  # f-string expression part cannot include a backslash
+    _logger.info(f"Tools available:\n{newline.join(available_tools)}")
+    _logger.info(f"Tools compatibility table:\n{tools.get_compatibility_text_table()}")
+
+
 def parse_args():
     """Parse CLI arguments"""
     parser_descr = """avaliable commands:
     setup - setup configuration file with avaliable EDA
     init  - initialize workspace in the current folder
     run   - invoke simulation in the current workspace
+    info  - print information about tools and configuration
 
 add -h/--help argument to any command to get more information"""
 
@@ -146,6 +160,9 @@ add -h/--help argument to any command to get more information"""
     parser_run.add_argument("tool", nargs="?", type=tools.ToolUid, help="tool for simulation")
     parser_run.add_argument("--waves", action="store_true", help="open waves after simulation ends")
     parser_run.set_defaults(func=cmd_run)
+
+    parser_setup = subparsers.add_parser("info")
+    parser_setup.set_defaults(func=cmd_info)
 
     return parser.parse_args()
 
