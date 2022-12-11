@@ -1,6 +1,6 @@
 import pkg_resources
 import os
-from typing import Dict, Callable, Dict
+from typing import Dict, Dict
 from pathlib import Path
 from enum import Enum
 import json

@@ -121,7 +121,8 @@ def cmd_info(args: argparse.Namespace) -> None:
 
 def parse_args():
     """Parse CLI arguments"""
-    parser_descr = """avaliable commands:
+    parser_descr = f"""playhdl {utils.get_pkg_version()}
+avaliable commands:
     setup - setup configuration file with avaliable EDA
     init  - initialize workspace in the current folder
     run   - invoke simulation in the current workspace
