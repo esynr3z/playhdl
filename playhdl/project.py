@@ -49,7 +49,7 @@ def create(
 
 def dump(file: Path, project: Project, **kwargs) -> None:
     """Dump project to file"""
-    with utils.query_if_file_exists(file, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(file, kwargs.get("query_force_yes", False)):
         utils.dump_json(file, dataclasses.asdict(project))
     _logger.info(f"Project was successfuly saved to '{file}'")
 

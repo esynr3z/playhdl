@@ -41,7 +41,7 @@ def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
 
     # Try to save settings to file
     _logger.info(f"Save settings to '{user_settings_file}' ...")
-    with utils.query_if_file_exists(user_settings_file, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(user_settings_file, kwargs.get("query_force_yes", False)):
         dump(user_settings_file, user_settings)
 
 

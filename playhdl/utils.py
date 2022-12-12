@@ -47,15 +47,14 @@ def load_json(file: Path) -> Dict:
         return json.load(f)
 
 
-@contextmanager
-def query_if_file_exists(filepath: Path, force_yes: bool = False):
+def is_write_allowed(filepath: Path, force_yes: bool = False) -> bool:
+    """Query user if file exists and write it then"""
     if filepath.is_file():
         # Provide message and lamda with dump method in case caller want to query user for further steps
         _logger.warning(f"File '{filepath}' already exists. It will be overwriten!")
-        if force_yes or input_query_yes_no():
-            yield
+        return force_yes or input_query_yes_no()
     else:
-        yield
+        return True
 
 
 def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
@@ -63,7 +62,7 @@ def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
     _logger.warning(f"{question} [y/n]")
     while True:
         try:
-            return distutils.util.strtobool(input().lower())  # type: ignore
+            return bool(distutils.util.strtobool(input().lower()))  # type: ignore
         except ValueError:
             _logger.error("Usupported answer! Please type y/yes or n/no.")
 

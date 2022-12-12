@@ -37,7 +37,7 @@ def dump(template: TemplateDescriptor, **kwargs) -> None:
     """Save template to a disc"""
     filepath = Path(template.filename)
     _logger.info(f"Save '{filepath}' to a disk ...")
-    with utils.query_if_file_exists(filepath, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(filepath, kwargs.get("query_force_yes", False)):
         with filepath.open("w") as f:
             f.write(template.content)
 
