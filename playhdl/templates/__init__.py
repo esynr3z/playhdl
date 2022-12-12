@@ -45,14 +45,19 @@ def dump(template: TemplateDescriptor, **kwargs) -> None:
 class _DesignTemplate(ABC):
     """Generic template"""
 
-    @abstractmethod
     def generate(self, **kwargs) -> List[TemplateDescriptor]:
         """Generate design template files"""
-        raise NotImplementedError
+        content = self._read_template_file(self.get_template_name())
+        return [TemplateDescriptor(self.get_template_name(), content)]
 
     @abstractclassmethod
     def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
+        raise NotImplementedError
+
+    @abstractclassmethod
+    def get_template_name(cls) -> str:
+        """Get name of the template"""
         raise NotImplementedError
 
     def _read_template_file(self, filename: str) -> str:
@@ -72,40 +77,35 @@ class _DesignTemplate(ABC):
 class _Verilog(_DesignTemplate):
     """Verilog design template"""
 
-    def generate(self, **kwargs) -> List[TemplateDescriptor]:
-        """Generate design template files"""
-        content = self._read_template_file("tb.v")
-        return [TemplateDescriptor("tb.v", content)]
-
     @classmethod
     def get_kind(cls) -> DesignKind:
-        """Get kind of the template"""
         return DesignKind.verilog
+
+    @classmethod
+    def get_template_name(cls) -> str:
+        return "tb.v"
 
 
 class _SystemVerilog(_DesignTemplate):
     """SystemVerilog design template"""
-
-    def generate(self, **kwargs) -> List[TemplateDescriptor]:
-        """Generate design template files"""
-        content = self._read_template_file("tb.sv")
-        return [TemplateDescriptor("tb.sv", content)]
 
     @classmethod
     def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
         return DesignKind.sv
 
+    @classmethod
+    def get_template_name(cls) -> str:
+        return "tb.sv"
+
 
 class _SystemVerilogUvm12(_DesignTemplate):
     """SystemVerilog UVM 1.2 design template"""
 
-    def generate(self, **kwargs) -> List[TemplateDescriptor]:
-        """Generate design template files"""
-        content = self._read_template_file("tb_uvm12.sv")
-        return [TemplateDescriptor("tb_uvm12.sv", content)]
-
     @classmethod
     def get_kind(cls) -> DesignKind:
-        """Get kind of the template"""
         return DesignKind.sv_uvm12
+
+    @classmethod
+    def get_template_name(cls) -> str:
+        return "tb_uvm12.sv"
