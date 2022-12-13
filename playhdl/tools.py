@@ -121,7 +121,7 @@ class _Tool(ABC):
     def find_bin_dir(cls) -> Optional[Path]:
         """Try to find a directory with executables for the provided tool"""
         bin_dir = shutil.which(cls.get_base_exe_name())
-        return Path(bin_dir) if bin_dir else None
+        return Path(bin_dir).parent if bin_dir else None
 
     @classmethod
     def _validate_design_kind(cls, design_kind: templates.DesignKind):
