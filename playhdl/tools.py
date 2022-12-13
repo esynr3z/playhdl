@@ -19,6 +19,10 @@ class ToolSettings:
     env: Dict[str, str] = dataclasses.field(default_factory=dict)
     extras: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
+    def __post_init__(self):
+        self.bin_dir = Path(self.bin_dir)
+        self.kind = ToolKind(self.kind)
+
 
 class ToolKind(utils.ExtendedEnum):
     MODELSIM = enum.auto()
