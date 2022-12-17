@@ -8,7 +8,8 @@ import playhdl.tools as tools
 
 import pytest
 
-from playhdl.settings import dump, load, setup, UserSettings
+# Setup imported as setup_ to avoid mixing with pytest's setup() method
+from playhdl.settings import dump, load, setup as setup_, UserSettings
 
 
 class TestSetup:
@@ -29,14 +30,14 @@ class TestSetup:
             f.write(text)
 
     def test_smoke(self, app_dir: Path, settings_file: Path):
-        setup(app_dir, settings_file)
+        setup_(app_dir, settings_file)
         assert app_dir.is_dir() is True
         assert settings_file.is_file() is True
         assert self._read_file(settings_file) != ""
 
     def test_dir_exists(self, app_dir: Path, settings_file: Path):
         app_dir.mkdir(parents=True)
-        setup(app_dir, settings_file)
+        setup_(app_dir, settings_file)
 
     def test_file_exists_overwrite(self, app_dir: Path, settings_file: Path, monkeypatch: pytest.MonkeyPatch):
         app_dir.mkdir(parents=True)
@@ -44,7 +45,7 @@ class TestSetup:
         self._write_file(settings_file, some_text)
 
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\ny"))
-        setup(app_dir, settings_file)
+        setup_(app_dir, settings_file)
         assert self._read_file(settings_file) != some_text
 
     def test_file_exists_no_overwrite(self, app_dir: Path, settings_file: Path, monkeypatch: pytest.MonkeyPatch):
@@ -53,7 +54,7 @@ class TestSetup:
         self._write_file(settings_file, some_text)
 
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
-        setup(app_dir, settings_file)
+        setup_(app_dir, settings_file)
         assert self._read_file(settings_file) == some_text
 
     def test_file_exists_force_overwrite(self, app_dir: Path, settings_file: Path, monkeypatch: pytest.MonkeyPatch):
@@ -62,7 +63,7 @@ class TestSetup:
         self._write_file(settings_file, some_text)
 
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
-        setup(app_dir, settings_file, query_force_yes=True)
+        setup_(app_dir, settings_file, query_force_yes=True)
         assert self._read_file(settings_file) != some_text
 
     def test_dump_load(self, app_dir: Path, settings_file: Path):
@@ -82,6 +83,6 @@ class TestSetup:
         assert settings == test_settings
 
     def test_setup_load(self, app_dir: Path, settings_file: Path):
-        setup(app_dir, settings_file, query_force_yes=True)
+        setup_(app_dir, settings_file, query_force_yes=True)
         settings = load(settings_file)
         assert isinstance(settings, UserSettings)

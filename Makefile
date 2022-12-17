@@ -1,20 +1,18 @@
-.PHONY: shell format check-format test lint
+.PHONY: format check-format test lint
 
 PKG = playhdl
-
-shell:
-	poetry shell
+POETRY_RUN = poetry run
 
 format:
-	usort format .
-	black .
+	$(POETRY_RUN) usort format .
+	$(POETRY_RUN) black .
 
 check-format:
-	usort check .
-	black --check .
+	$(POETRY_RUN) usort check .
+	$(POETRY_RUN) black --check .
 
 test:
-	pytest --cov=$(PKG) --no-cov-on-fail --cov-report term-missing
+	$(POETRY_RUN) pytest --cov=$(PKG) --no-cov-on-fail --cov-report term-missing
 
 lint:
-	flake8
+	$(POETRY_RUN) flake8

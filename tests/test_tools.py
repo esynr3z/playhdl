@@ -91,25 +91,21 @@ class _TestGenerateScript:
         for step in script.waves:
             assert step != ""
 
-    def test_verilog(self, settings: ToolSettings) -> ToolScript:
+    def test_verilog(self, settings: ToolSettings):
         script = generate_script(settings, templates.DesignKind.verilog, ["tb.v"])
         self._assert_script(script)
-        return script
 
-    def test_sv(self, settings: ToolSettings) -> ToolScript:
+    def test_sv(self, settings: ToolSettings):
         script = generate_script(settings, templates.DesignKind.sv, ["tb.sv"])
         self._assert_script(script)
-        return script
 
-    def test_sv_uvm12(self, settings: ToolSettings) -> ToolScript:
+    def test_sv_uvm12(self, settings: ToolSettings):
         script = generate_script(settings, templates.DesignKind.sv_uvm12, ["tb_uvm12.sv"])
         self._assert_script(script)
-        return script
 
-    def test_vhdl(self, settings: ToolSettings) -> ToolScript:
+    def test_vhdl(self, settings: ToolSettings):
         script = generate_script(settings, templates.DesignKind.vhdl, ["tb.vhd"])
         self._assert_script(script)
-        return script
 
 
 class TestGenerateScriptIcarus(_TestGenerateScript):
@@ -180,7 +176,7 @@ class TestGenerateScriptVcs(_TestGenerateScript):
     @pytest.mark.parametrize("gui", ["verdi", "dve"])
     def test_extras_gui(self, settings: ToolSettings, gui: str):
         settings.extras["gui"] = gui
-        script = super().test_verilog(settings)
+        script = generate_script(settings, templates.DesignKind.verilog, ["tb.v"])
         for step in script.waves:
             if gui in step:
                 break
