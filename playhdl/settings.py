@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import Dict
-from pathlib import Path
+
 import dataclasses
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict
 
-from . import log
-from . import tools
-from . import utils
+from . import log, tools, utils
 
 _logger = log.get_logger()
 
@@ -29,8 +28,8 @@ def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # Prepare settings file
-    _logger.info(f"Create default settings ...")
-    _logger.info(f"  Try to find all tools available ...")
+    _logger.info("Create default settings ...")
+    _logger.info("  Try to find all tools available ...")
     tool_pool = {}
     for t in tools.ToolKind:
         bin_dir = tools.find_tool_dir(t)

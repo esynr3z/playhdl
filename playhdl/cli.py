@@ -1,13 +1,7 @@
 import argparse
 from pathlib import Path
 
-from . import log
-from . import utils
-from . import templates
-from . import tools
-from . import project
-from . import settings
-from . import runner
+from . import log, project, runner, settings, templates, tools, utils
 
 _logger = log.get_logger()
 
@@ -112,8 +106,8 @@ def cmd_info(args: argparse.Namespace) -> None:
     user_settings = _load_settings(user_settings_file)
 
     available_tools = []
-    for uid, settings in user_settings.tools.items():
-        available_tools.append(f"{uid:>15}: {settings.bin_dir}")
+    for uid, tool_settings in user_settings.tools.items():
+        available_tools.append(f"{uid:>15}: {tool_settings.bin_dir}")
     newline = "\n"  # f-string expression part cannot include a backslash
     _logger.info(f"Tools available:\n{newline.join(available_tools)}")
     _logger.info(f"Tools compatibility table:\n{tools.get_compatibility_text_table()}")

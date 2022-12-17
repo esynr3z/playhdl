@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import List, Type
-from pathlib import Path
-import enum
-from abc import ABC, abstractmethod, abstractclassmethod
-from dataclasses import dataclass
 
-from .. import log
-from .. import utils
+import enum
+from abc import ABC, abstractclassmethod
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Type
+
+from .. import log, utils
 
 _logger = log.get_logger()
 

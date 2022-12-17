@@ -1,26 +1,18 @@
 """Tests for playhdl/utils.py
 """
 
-import pytest
-import os
-from io import StringIO
-from pathlib import Path
 import enum
 from enum import Enum
+from io import StringIO
+from pathlib import Path
 
 import playhdl
-from playhdl.utils import *
+import playhdl.utils as utils
+import pytest
 
 
 def test_get_pkg_version():
-    assert playhdl.__version__ == get_pkg_version()
-
-
-def test_is_debug_en():
-    os.environ.setdefault("DEBUG", "1")
-    assert is_debug_en() is True
-    os.environ.pop("DEBUG")
-    assert is_debug_en() is False
+    assert playhdl.__version__ == utils.get_pkg_version()
 
 
 class TestJson:
@@ -42,7 +34,7 @@ class TestJson:
         }
         json_file = test_file
         with pytest.raises(TypeError):
-            dump_json(json_file, data)
+            utils.dump_json(json_file, data)
 
     def test_valid_encoding(self, test_file: Path):
         data = {
@@ -51,8 +43,8 @@ class TestJson:
             "baz_dict": {"answer": 42},
         }
         json_file = test_file
-        dump_json(json_file, data)
-        loaded_data = load_json(json_file)
+        utils.dump_json(json_file, data)
+        loaded_data = utils.load_json(json_file)
         loaded_data["foo_path"] = Path(loaded_data["foo_path"])
         loaded_data["bar_enum"] = self.TestEnum[loaded_data["bar_enum"]]
         assert data == loaded_data
@@ -66,25 +58,25 @@ class TestIsWriteAllowed:
     def test_query_true(self, test_file: Path, monkeypatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nb\ny"))
-        assert is_write_allowed(test_file) is True
+        assert utils.is_write_allowed(test_file) is True
 
     def test_query_false(self, test_file: Path, monkeypatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
-        assert is_write_allowed(test_file) is False
+        assert utils.is_write_allowed(test_file) is False
 
     def test_query_force_true(self, test_file: Path, monkeypatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
-        assert is_write_allowed(test_file, force_yes=True) is True
+        assert utils.is_write_allowed(test_file, force_yes=True) is True
 
     def test_query_not_exist(self, test_file: Path, monkeypatch):
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
-        assert is_write_allowed(test_file) is True
+        assert utils.is_write_allowed(test_file) is True
 
 
 class TestExtendedEnum:
-    class Foo(ExtendedEnum):
+    class Foo(utils.ExtendedEnum):
         ABC = enum.auto()
         XYZ = enum.auto()
 

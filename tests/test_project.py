@@ -1,15 +1,17 @@
 """Tests for playhdl/project.py
 """
 
-import pytest
-from typing import Dict
-from io import StringIO
 from copy import deepcopy
+from io import StringIO
+from pathlib import Path
+from typing import Dict
 
 import playhdl.settings as settings
+
 import playhdl.templates as templates
 import playhdl.tools as tools
-from playhdl.project import *
+import pytest
+from playhdl.project import create, dump, load, Project
 
 
 @pytest.fixture

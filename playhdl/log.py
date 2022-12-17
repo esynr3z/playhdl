@@ -1,6 +1,5 @@
 import logging
-
-from . import utils
+import os
 
 
 class _CustomFormatter(logging.Formatter):
@@ -30,6 +29,11 @@ class _CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+def is_debug_en() -> bool:
+    """Is debug enabled"""
+    return "DEBUG" in os.environ
+
+
 def init_logger():
     """Initialize global logger"""
     # Create logger
@@ -38,7 +42,7 @@ def init_logger():
 
     # Create console handler with custom formatting
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG if utils.is_debug_en() else logging.INFO)
+    ch.setLevel(logging.DEBUG if is_debug_en() else logging.INFO)
     ch.setFormatter(_CustomFormatter())
     logger.addHandler(ch)
 

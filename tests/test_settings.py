@@ -1,11 +1,14 @@
 """Tests for playhdl/templates/__init__.py
 """
 
-import pytest
 from io import StringIO
+from pathlib import Path
 
-from playhdl.settings import *
 import playhdl.tools as tools
+
+import pytest
+
+from playhdl.settings import dump, load, setup, UserSettings
 
 
 class TestSetup:

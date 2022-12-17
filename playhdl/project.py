@@ -1,14 +1,11 @@
 from __future__ import annotations
-from pathlib import Path
-from typing import List, Dict
+
 import dataclasses
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List
 
-from . import log
-from . import templates
-from . import settings
-from . import tools
-from . import utils
+from . import log, settings, templates, tools, utils
 
 _logger = log.get_logger()
 
@@ -32,9 +29,9 @@ def create(
 ) -> Project:
     project_tools: Dict[tools.ToolUid, tools.ToolScript] = {}
 
-    for uid, settings in user_settings.tools.items():
+    for uid, tool_settings in user_settings.tools.items():
         try:
-            project_tools[uid] = tools.generate_script(settings, design_kind, sources)
+            project_tools[uid] = tools.generate_script(tool_settings, design_kind, sources)
         except (KeyError, ValueError, NotImplementedError):
             pass
 

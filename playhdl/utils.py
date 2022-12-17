@@ -1,12 +1,10 @@
-import pkg_resources
-import os
-from typing import Dict, Dict
-from pathlib import Path
-from enum import Enum
-import json
 import distutils
-from contextlib import contextmanager
+import json
+from enum import Enum
+from pathlib import Path
+from typing import Dict
 
+import pkg_resources
 
 from . import log
 
@@ -16,11 +14,6 @@ _logger = log.get_logger()
 def get_pkg_version() -> str:
     """Get version of the package"""
     return pkg_resources.get_distribution("playhdl").version
-
-
-def is_debug_en() -> bool:
-    """Is debug enabled"""
-    return "DEBUG" in os.environ
 
 
 class ExtendedJsonEncoder(json.JSONEncoder):

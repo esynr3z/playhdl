@@ -1,13 +1,22 @@
 """Tests for playhdl/tools.py
 """
 
-import pytest
-from io import StringIO
 import shutil
+from pathlib import Path
 
-from playhdl.tools import *
-from playhdl.tools import _Tool
 import playhdl.templates as templates
+
+import pytest
+
+from playhdl.tools import (
+    _Tool,
+    find_tool_dir,
+    generate_script,
+    get_compatibility_text_table,
+    ToolKind,
+    ToolScript,
+    ToolSettings,
+)
 
 
 def _get_base_exe_name(tool_kind: ToolKind) -> str:

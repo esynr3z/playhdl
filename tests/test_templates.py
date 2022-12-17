@@ -1,11 +1,13 @@
 """Tests for playhdl/templates/__init__.py
 """
 
-import pytest
 from io import StringIO
+from pathlib import Path
+from typing import List
 
-from playhdl.templates import *
-import playhdl.templates as templates
+import pytest
+
+from playhdl.templates import _DesignTemplate, DesignKind, dump, generate, TemplateDescriptor
 
 
 class TestGenerate:
@@ -84,8 +86,8 @@ class TestDump:
 class TestDesignTemplate:
     def test_abc(self):
         with pytest.raises(NotImplementedError):
-            templates._DesignTemplate.get_kind()
+            _DesignTemplate.get_kind()
         with pytest.raises(NotImplementedError):
-            templates._DesignTemplate.get_template_name()
+            _DesignTemplate.get_template_name()
         with pytest.raises(TypeError):
-            templates._DesignTemplate()
+            _DesignTemplate()
