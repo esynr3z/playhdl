@@ -55,22 +55,22 @@ class TestIsWriteAllowed:
     def test_file(self, tmp_path: Path) -> Path:
         return tmp_path.joinpath("query_test_file")
 
-    def test_query_true(self, test_file: Path, monkeypatch):
+    def test_query_true(self, test_file: Path, monkeypatch: pytest.MonkeyPatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nb\ny"))
         assert utils.is_write_allowed(test_file) is True
 
-    def test_query_false(self, test_file: Path, monkeypatch):
+    def test_query_false(self, test_file: Path, monkeypatch: pytest.MonkeyPatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
         assert utils.is_write_allowed(test_file) is False
 
-    def test_query_force_true(self, test_file: Path, monkeypatch):
+    def test_query_force_true(self, test_file: Path, monkeypatch: pytest.MonkeyPatch):
         test_file.touch()
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
         assert utils.is_write_allowed(test_file, force_yes=True) is True
 
-    def test_query_not_exist(self, test_file: Path, monkeypatch):
+    def test_query_not_exist(self, test_file: Path, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
         assert utils.is_write_allowed(test_file) is True
 

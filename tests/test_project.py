@@ -77,7 +77,7 @@ def test_dump_load(project_file: Path, project_data: Dict):
     assert proj == loaded_proj
 
 
-def test_dump_exists_overwrite(project_file: Path, project_data: Dict, monkeypatch):
+def test_dump_exists_overwrite(project_file: Path, project_data: Dict, monkeypatch: pytest.MonkeyPatch):
     orig_proj = Project(**project_data)
     dump(project_file, orig_proj)
 
@@ -89,7 +89,7 @@ def test_dump_exists_overwrite(project_file: Path, project_data: Dict, monkeypat
     assert new_proj == load(project_file)
 
 
-def test_dump_exists_no_overwrite(project_file: Path, project_data: Dict, monkeypatch):
+def test_dump_exists_no_overwrite(project_file: Path, project_data: Dict, monkeypatch: pytest.MonkeyPatch):
     orig_proj = Project(**project_data)
     dump(project_file, orig_proj)
 
@@ -101,7 +101,7 @@ def test_dump_exists_no_overwrite(project_file: Path, project_data: Dict, monkey
     assert orig_proj == load(project_file)
 
 
-def test_dump_exists_force_overwrite(project_file: Path, project_data: Dict, monkeypatch):
+def test_dump_exists_force_overwrite(project_file: Path, project_data: Dict, monkeypatch: pytest.MonkeyPatch):
     orig_proj = Project(**project_data)
     dump(project_file, orig_proj)
 

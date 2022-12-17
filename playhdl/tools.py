@@ -18,7 +18,7 @@ class ToolSettings:
     env: Dict[str, str] = dataclasses.field(default_factory=dict)
     extras: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.bin_dir = Path(self.bin_dir)
         self.kind = ToolKind(self.kind)
 
@@ -80,7 +80,7 @@ class _Tool(ABC):
     """Generic tool"""
 
     @abstractmethod
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         self.settings = settings
         if self.settings.kind != self.get_kind():
             raise RuntimeError(
@@ -89,7 +89,7 @@ class _Tool(ABC):
             )
 
     @abstractmethod
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         """Generate list of commands to perform tool execution"""
         raise NotImplementedError
 

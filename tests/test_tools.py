@@ -31,7 +31,7 @@ def _get_base_exe_name(tool_kind: ToolKind) -> str:
 
 
 @pytest.mark.parametrize("tool_kind", ToolKind.aslist())
-def test_find_tool_dir(tool_kind):
+def test_find_tool_dir(tool_kind: ToolKind):
     bin_path = shutil.which(_get_base_exe_name(tool_kind))
     expected = Path(bin_path).parent if bin_path else None
     assert find_tool_dir(tool_kind) == expected
@@ -80,7 +80,7 @@ class _TestGenerateScript:
     def settings(self) -> ToolSettings:
         raise NotImplementedError
 
-    def _assert_script(self, script: ToolScript):
+    def _assert_script(self, script: ToolScript) -> None:
         assert len(script.build) > 0
         for step in script.build:
             assert step != ""

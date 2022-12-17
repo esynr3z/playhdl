@@ -48,17 +48,22 @@ class TestDump:
     def descr_alt(self, tmp_path: Path) -> TemplateDescriptor:
         return TemplateDescriptor(filename=str(tmp_path.joinpath("test")), content="Cake is a lie!\n")
 
-    def read_file(self, file) -> str:
+    def read_file(self, file: Path) -> str:
         with file.open("r") as f:
             return f.read()
 
-    def test_dump_not_exist(self, descr):
+    def test_dump_not_exist(self, descr: TemplateDescriptor):
         dump(descr)
         filepath = Path(descr.filename)
         assert filepath.is_file() is True
         assert descr.content == self.read_file(filepath)
 
-    def test_dump_exist_query_yes(self, descr, descr_alt, monkeypatch):
+    def test_dump_exist_query_yes(
+        self,
+        descr: TemplateDescriptor,
+        descr_alt: TemplateDescriptor,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\ny"))
         dump(descr)
         dump(descr_alt)
@@ -66,7 +71,12 @@ class TestDump:
         assert filepath.is_file() is True
         assert descr_alt.content == self.read_file(filepath)
 
-    def test_dump_exist_query_no(self, descr, descr_alt, monkeypatch):
+    def test_dump_exist_query_no(
+        self,
+        descr: TemplateDescriptor,
+        descr_alt: TemplateDescriptor,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
         dump(descr)
         dump(descr_alt)
@@ -74,7 +84,12 @@ class TestDump:
         assert filepath.is_file() is True
         assert descr.content == self.read_file(filepath)
 
-    def test_dump_exist_query_force_yes(self, descr, descr_alt, monkeypatch):
+    def test_dump_exist_query_force_yes(
+        self,
+        descr: TemplateDescriptor,
+        descr_alt: TemplateDescriptor,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.setattr("sys.stdin", StringIO("a\nc\nn"))
         dump(descr)
         dump(descr_alt, query_force_yes=True)
