@@ -23,7 +23,7 @@ class _CustomFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + generic_format + reset,
     }
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_fmt = self.formats.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
@@ -34,7 +34,7 @@ def is_debug_en() -> bool:
     return "DEBUG" in os.environ
 
 
-def init_logger():
+def init_logger() -> None:
     """Initialize global logger"""
     # Create logger
     logger = logging.getLogger("playhdl")

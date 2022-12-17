@@ -5,9 +5,12 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict
+from typing import Dict, TYPE_CHECKING
 
-from . import log, project, settings, tools
+from . import log, project, settings
+
+if TYPE_CHECKING:
+    from . import tools
 
 _logger = log.get_logger()
 
@@ -52,7 +55,7 @@ def _exec(cmd: str, cwd: Path, bin_dir: Path, env: Dict[str, str]) -> None:
         raise RuntimeError(f"Command '{cmd}' returned {proc.returncode}. Check the output above for diagnostics.")
 
 
-def run(project: project.Project, settings: settings.UserSettings, tool_uid: tools.ToolUid, waves: bool):
+def run(project: project.Project, settings: settings.UserSettings, tool_uid: tools.ToolUid, waves: bool) -> None:
     # Check that provided tool exists
     if tool_uid not in project.tools.keys():
         raise ValueError(

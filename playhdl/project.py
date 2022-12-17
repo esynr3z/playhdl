@@ -2,10 +2,15 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, List
 
-from . import log, settings, templates, tools, utils
+from typing import Dict, List, TYPE_CHECKING
+
+from . import log, tools, utils
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from . import settings, templates
 
 _logger = log.get_logger()
 
@@ -14,7 +19,7 @@ _logger = log.get_logger()
 class Project:
     tools: Dict[tools.ToolUid, tools.ToolScript] = dataclasses.field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for uid, script in self.tools.items():
             # dataclass can't handle nesting, so deserealization has to be done mannualy
             if isinstance(script, dict):
@@ -44,9 +49,9 @@ def create(
     return project
 
 
-def dump(file: Path, project: Project, **kwargs) -> None:
+def dump(file: Path, project: Project, **kwargs: Dict) -> None:
     """Dump project to file"""
-    if utils.is_write_allowed(file, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(file, bool(kwargs.get("query_force_yes", False))):
         utils.dump_json(file, dataclasses.asdict(project))
     _logger.info(f"Project was successfuly saved to '{file}'")
 

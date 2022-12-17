@@ -123,18 +123,18 @@ class _Tool(ABC):
         return Path(bin_dir).parent if bin_dir else None
 
     @classmethod
-    def _validate_design_kind(cls, design_kind: templates.DesignKind):
+    def _validate_design_kind(cls, design_kind: templates.DesignKind) -> None:
         """Check that this design kind is supported by the tool"""
         if design_kind not in cls.get_supported_design_kinds():
             raise ValueError(f"{cls.get_kind()} doesn't support provided design kind '{design_kind}'")
 
     @classmethod
-    def _patch_sources(cls, sources: List[str]):
+    def _patch_sources(cls, sources: List[str]) -> List[str]:
         """Patch paths to sources"""
         return [f"../{s}" for s in sources]
 
     @classmethod
-    def _stringify_sources(cls, sources: List[str], separator: str = " "):
+    def _stringify_sources(cls, sources: List[str], separator: str = " ") -> str:
         """Convert list of sources to a string"""
         return separator.join(sources)
 
@@ -142,10 +142,10 @@ class _Tool(ABC):
 class _Icarus(_Tool):
     """Icarus Verilog"""
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         lang_ver = "-g2001"  # verilog by default
@@ -175,10 +175,10 @@ class _Icarus(_Tool):
 class _Modelsim(_Tool):
     """Siemens (Mentor Grapthics) Modelsim"""
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -211,10 +211,10 @@ class _Modelsim(_Tool):
 class _Xcelium(_Tool):
     """Cadence Xcelium"""
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -252,10 +252,10 @@ class _Xcelium(_Tool):
 class _Verilator(_Tool):
     """Veripool Verilator"""
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         lang_ver = "+verilog2001ext+v"  # verilog by default
@@ -289,11 +289,11 @@ class _Vcs(_Tool):
         DVE = enum.auto()
         VERDI = enum.auto()
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
         self.gui = self._GuiKind(settings.extras.get("gui", "verdi"))
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -334,10 +334,10 @@ class _Vcs(_Tool):
 class _Vivado(_Tool):
     """Xilinx Vivado"""
 
-    def __init__(self, settings: ToolSettings):
+    def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         uvm_vlog_opts = ""

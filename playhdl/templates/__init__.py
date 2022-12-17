@@ -4,7 +4,7 @@ import enum
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Type
+from typing import Dict, List, Type
 
 from .. import log, utils
 
@@ -33,7 +33,7 @@ def generate(design_kind: DesignKind) -> List[TemplateDescriptor]:
     return templates
 
 
-def dump(template: TemplateDescriptor, **kwargs) -> None:
+def dump(template: TemplateDescriptor, **kwargs: Dict) -> None:
     """Save template to a disc"""
     filepath = Path(template.filename)
     _logger.info(f"Save '{filepath}' to a disk ...")
@@ -45,7 +45,7 @@ def dump(template: TemplateDescriptor, **kwargs) -> None:
 class _DesignTemplate(ABC):
     """Generic template"""
 
-    def generate(self, **kwargs) -> List[TemplateDescriptor]:
+    def generate(self, **kwargs: Dict) -> List[TemplateDescriptor]:
         """Generate design template files"""
         content = self._read_template_file(self.get_template_name())
         return [TemplateDescriptor(self.get_template_name(), content)]

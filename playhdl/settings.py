@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict
+
+from typing import Dict, TYPE_CHECKING
 
 from . import log, tools, utils
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _logger = log.get_logger()
 
@@ -14,14 +17,14 @@ _logger = log.get_logger()
 class UserSettings:
     tools: Dict[tools.ToolUid, tools.ToolSettings] = dataclasses.field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for uid, settings in self.tools.items():
             # dataclass can't handle nesting, so deserealization has to be done mannualy
             if isinstance(settings, dict):
                 self.tools[uid] = tools.ToolSettings(**settings)
 
 
-def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
+def setup(app_dir: Path, user_settings_file: Path, **kwargs: Dict) -> None:
     """Create settings and application folder for a first time"""
     # Prepare application directory
     _logger.info(f"Create application home ...'{app_dir}'")
@@ -40,7 +43,7 @@ def setup(app_dir: Path, user_settings_file: Path, **kwargs) -> None:
 
     # Try to save settings to file
     _logger.info(f"Save settings to '{user_settings_file}' ...")
-    if utils.is_write_allowed(user_settings_file, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(user_settings_file, bool(kwargs.get("query_force_yes", False))):
         dump(user_settings_file, user_settings)
 
 

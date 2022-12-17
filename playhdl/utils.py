@@ -2,7 +2,7 @@ import distutils
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, List, Union
 
 import pkg_resources
 
@@ -19,7 +19,7 @@ def get_pkg_version() -> str:
 class ExtendedJsonEncoder(json.JSONEncoder):
     """Custom encoder that can serialize more types"""
 
-    def default(self, obj):
+    def default(self, obj: Any) -> Union[str, Any]:
         if isinstance(obj, Path):
             return str(obj)
         elif isinstance(obj, Enum):
@@ -28,7 +28,7 @@ class ExtendedJsonEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def dump_json(file: Path, data: Dict):
+def dump_json(file: Path, data: Dict) -> None:
     """Dump data to a JSON file"""
     with file.open("w") as f:
         json.dump(data, f, cls=ExtendedJsonEncoder, indent=4)
@@ -61,14 +61,14 @@ def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
 
 
 class ExtendedEnum(str, Enum):
-    def _generate_next_value_(name, start, count, last_values):
+    def _generate_next_value_(name, start: int, count: int, last_values: List[Any]) -> str:
         """This uses enumeration name as a string value for auto() call"""
         return name.lower()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
     @classmethod
-    def aslist(cls):
+    def aslist(cls) -> List[str]:
         """List of values of the enum"""
         return list(map(lambda c: c.value, cls))
