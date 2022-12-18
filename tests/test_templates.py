@@ -3,7 +3,6 @@
 
 from io import StringIO
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -12,14 +11,14 @@ from playhdl.templates import _DesignTemplate, DesignKind, dump, generate, Templ
 
 class TestGenerate:
     def test_verilog(self):
-        descr: List[TemplateDescriptor] = generate(DesignKind.verilog)
+        descr = generate(DesignKind.verilog)
         assert len(descr) == 1
         assert descr[0].filename.endswith(".v")
         assert "module tb;" in descr[0].content
         assert "endmodule" in descr[0].content
 
     def test_sv(self):
-        descr: List[TemplateDescriptor] = generate(DesignKind.sv)
+        descr = generate(DesignKind.sv)
         assert len(descr) == 1
         assert descr[0].filename.endswith(".sv")
         assert "module tb;" in descr[0].content
@@ -27,7 +26,7 @@ class TestGenerate:
         assert "endmodule" in descr[0].content
 
     def test_sv_uvm12(self):
-        descr: List[TemplateDescriptor] = generate(DesignKind.sv_uvm12)
+        descr = generate(DesignKind.sv_uvm12)
         assert len(descr) == 1
         assert descr[0].filename.endswith(".sv")
         assert "module tb;" in descr[0].content

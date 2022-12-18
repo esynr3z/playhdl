@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, TYPE_CHECKING
 
 from . import log, tools, utils
 
@@ -49,7 +49,7 @@ def create(
     return project
 
 
-def dump(file: Path, project: Project, **kwargs: Dict) -> None:
+def dump(file: Path, project: Project, **kwargs: Any) -> None:
     """Dump project to file"""
     if utils.is_write_allowed(file, bool(kwargs.get("query_force_yes", False))):
         utils.dump_json(file, dataclasses.asdict(project))

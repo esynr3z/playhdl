@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import enum
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Type
+from typing import Any, List, Type
 
 from .. import log, utils
 
@@ -33,11 +33,11 @@ def generate(design_kind: DesignKind) -> List[TemplateDescriptor]:
     return templates
 
 
-def dump(template: TemplateDescriptor, **kwargs: Dict) -> None:
+def dump(template: TemplateDescriptor, **kwargs: Any) -> None:
     """Save template to a disc"""
     filepath = Path(template.filename)
     _logger.info(f"Save '{filepath}' to a disk ...")
-    if utils.is_write_allowed(filepath, kwargs.get("query_force_yes", False)):
+    if utils.is_write_allowed(filepath, bool(kwargs.get("query_force_yes", False))):
         with filepath.open("w") as f:
             f.write(template.content)
 
@@ -45,17 +45,19 @@ def dump(template: TemplateDescriptor, **kwargs: Dict) -> None:
 class _DesignTemplate(ABC):
     """Generic template"""
 
-    def generate(self, **kwargs: Dict) -> List[TemplateDescriptor]:
+    def generate(self, **kwargs: Any) -> List[TemplateDescriptor]:
         """Generate design template files"""
         content = self._read_template_file(self.get_template_name())
         return [TemplateDescriptor(self.get_template_name(), content)]
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_kind(cls) -> DesignKind:
         """Get kind of the template"""
         raise NotImplementedError
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_template_name(cls) -> str:
         """Get name of the template"""
         raise NotImplementedError
@@ -68,7 +70,7 @@ class _DesignTemplate(ABC):
     @classmethod
     def get_subclass_by_kind(cls, design_kind: DesignKind) -> Type[_DesignTemplate]:
         """Get template class according to design kind"""
-        for cls in _DesignTemplate.__subclasses__():
+        for cls in _DesignTemplate.__subclasses__():  # type: ignore
             if cls.get_kind() == design_kind:
                 return cls
         raise ValueError(f"Can't find template class for design_kind={design_kind}")

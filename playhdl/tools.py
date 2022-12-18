@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import enum
 import shutil
-from abc import ABC, abstractclassmethod, abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
@@ -89,21 +89,24 @@ class _Tool(ABC):
             )
 
     @abstractmethod
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         """Generate list of commands to perform tool execution"""
         raise NotImplementedError
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_kind(cls) -> ToolKind:
         """Get kind of the tool"""
         raise NotImplementedError
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_base_exe_name(cls) -> str:
         """Get name of the basic executable"""
         raise NotImplementedError
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_supported_design_kinds(cls) -> List[templates.DesignKind]:
         """Get supported design kinds for the tool"""
         raise NotImplementedError
@@ -111,7 +114,7 @@ class _Tool(ABC):
     @classmethod
     def get_subclass_by_kind(cls, tool_kind: ToolKind) -> Type[_Tool]:
         """Get template class according to tool kind"""
-        for cls in _Tool.__subclasses__():
+        for cls in _Tool.__subclasses__():  # type: ignore
             if cls.get_kind() == tool_kind:
                 return cls
         raise ValueError(f"Can't find tool class for tool_kind={tool_kind}")
@@ -145,7 +148,7 @@ class _Icarus(_Tool):
     def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         lang_ver = "-g2001"  # verilog by default
@@ -178,7 +181,7 @@ class _Modelsim(_Tool):
     def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -214,7 +217,7 @@ class _Xcelium(_Tool):
     def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -255,7 +258,7 @@ class _Verilator(_Tool):
     def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         lang_ver = "+verilog2001ext+v"  # verilog by default
@@ -293,7 +296,7 @@ class _Vcs(_Tool):
         super().__init__(settings)
         self.gui = self._GuiKind(settings.extras.get("gui", "verdi"))
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         vlog_opts = ""
@@ -337,7 +340,7 @@ class _Vivado(_Tool):
     def __init__(self, settings: ToolSettings) -> None:
         super().__init__(settings)
 
-    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Dict) -> ToolScript:
+    def generate_script(self, design_kind: templates.DesignKind, sources: List[str], **kwargs: Any) -> ToolScript:
         self._validate_design_kind(design_kind)
 
         uvm_vlog_opts = ""

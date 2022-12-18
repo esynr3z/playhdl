@@ -1,7 +1,13 @@
-.PHONY: format check-format test lint
+.PHONY: setup-dev format check-format test lint type pre-commit
 
 PKG = playhdl
+PYTHON_VERSION ?= 3.8
+
 POETRY_RUN = poetry run
+
+setup-dev:
+	poetry env use $(PYTHON_VERSION)
+	poetry install
 
 format:
 	$(POETRY_RUN) usort format .
@@ -16,3 +22,9 @@ test:
 
 lint:
 	$(POETRY_RUN) flake8
+
+type:
+	$(POETRY_RUN) mypy -p $(PKG)
+	$(POETRY_RUN) mypy -p tests
+
+pre-commit: check-format lint type test

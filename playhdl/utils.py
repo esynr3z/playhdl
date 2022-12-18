@@ -61,7 +61,7 @@ def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
 
 
 class ExtendedEnum(str, Enum):
-    def _generate_next_value_(name, start: int, count: int, last_values: List[Any]) -> str:
+    def _generate_next_value_(name, start: int, count: int, last_values: List[Any]) -> Any:  # type: ignore
         """This uses enumeration name as a string value for auto() call"""
         return name.lower()
 
@@ -71,4 +71,4 @@ class ExtendedEnum(str, Enum):
     @classmethod
     def aslist(cls) -> List[str]:
         """List of values of the enum"""
-        return list(map(lambda c: c.value, cls))
+        return list(map(lambda c: c.value, cls))  # type: ignore

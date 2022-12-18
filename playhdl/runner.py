@@ -50,7 +50,7 @@ def _exec(cmd: str, cwd: Path, bin_dir: Path, env: Dict[str, str]) -> None:
         "stderr": subprocess.STDOUT,
         "shell": True,
     }
-    proc = subprocess.run(**kwargs)
+    proc = subprocess.run(**kwargs)  # type: ignore
     if proc.returncode != 0:
         raise RuntimeError(f"Command '{cmd}' returned {proc.returncode}. Check the output above for diagnostics.")
 
