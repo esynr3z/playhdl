@@ -114,7 +114,7 @@ def cmd_info(args: argparse.Namespace) -> None:
     _logger.info(f"Tools compatibility table:\n{tools.get_compatibility_text_table()}")
 
 
-def parse_args(cli_args: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """Parse CLI arguments"""
     parser_descr = f"""playhdl {utils.get_pkg_version()}
 avaliable commands:
@@ -160,11 +160,11 @@ add -h/--help argument to any command to get more information"""
     parser_setup = subparsers.add_parser("info")
     parser_setup.set_defaults(func=cmd_info)
 
-    return parser.parse_args(cli_args)
+    return parser.parse_args()
 
 
-def main(cli_args: Optional[List[str]] = None) -> None:
+def main() -> None:
     """Entry point to CLI of the application"""
     log.init_logger()
-    args = parse_args(cli_args)
+    args = parse_args()
     args.func(args)
