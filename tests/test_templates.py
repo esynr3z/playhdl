@@ -104,4 +104,4 @@ class TestDesignTemplate:
         with pytest.raises(NotImplementedError):
             _DesignTemplate.get_template_name()
         with pytest.raises(TypeError):
-            _DesignTemplate()
+            _DesignTemplate()  # type: ignore
