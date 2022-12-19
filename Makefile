@@ -18,7 +18,7 @@ check-format:
 	$(POETRY_RUN) black --check .
 
 test:
-	$(POETRY_RUN) pytest --cov=$(PKG) --no-cov-on-fail --cov-report term-missing
+	$(POETRY_RUN) pytest --cov=$(PKG) --no-cov-on-fail --cov-report term-missing $(ARGS)
 
 lint:
 	$(POETRY_RUN) flake8

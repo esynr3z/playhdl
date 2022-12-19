@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-from typing import List, Optional
 
 from . import log, project, runner, settings, templates, tools, utils
 
