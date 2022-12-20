@@ -47,7 +47,7 @@ def cmd_run(args: argparse.Namespace) -> None:
 
     if not args.tool:
         _show_run_options(project_descriptor)
-        return
+        exit(1)
 
     # Run simulator
     try:
@@ -70,7 +70,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     if not args.mode:
         _show_init_options()
-        return
+        exit(1)
 
     # Load user settings
     user_settings = _load_settings(user_settings_file)

@@ -1,7 +1,7 @@
 import subprocess
 import sys
-from typing import Any
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
