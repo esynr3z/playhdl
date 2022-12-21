@@ -1,0 +1,42 @@
+name: Tests & Checks
+
+on:
+  pull_request:
+    branches:
+    - '**'
+  push:
+    branches:
+    - main
+
+env:
+  PY_COLORS: "1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install prerequisites
+      run: |
+        sudo apt install -y iverilog
+        python -m pip install poetry --disable-pip-version-check
+        make setup
+    - name: Check format
+      run: make check-format
+    - name: Lint
+      run: make lint
+    - name: Check types
+      run: make type
+    - name: Run tests
+      run: make test
