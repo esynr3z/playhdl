@@ -32,26 +32,85 @@ playhdl info
 
 ## Quick start
 
-### Install
-
-To install the latest stable release (Python 3.8+ is required):
+* Install the latest stable release (Python 3.8+ is required):
 
 ```sh
 python -m pip install -U playhdl
 ```
 
-### Setup simulators
+* Setup settings file `$HOME/.playhdl/settings.json` with list of all automatically-discoverd simulators. Edit file manually to add undiscovered ones. This have to be done only once.
 
-### Create project
+```sh
+playhdl setup
+```
 
-### Run simulation
+* Init project file `playhdl.json` and template testbench in the current directory. It contains specific commands to be executed for compilation and simulation processes. Edit it manually to tweak tool arguments if required.
 
-## Command guide
+```sh
+playhdl sv # this will create ready-to-simulate tb.sv
+```
 
-### setup
+* Run simulation in one of the supported simulators for this project (language):
 
-### init
+```sh
+playhdl run icarus
+# to open waves after simulation
+playhdl run icarus --waves
+```
 
-### run
+## Offline install
 
-### info
+For an offline install you have several options how to get `wheel`:
+
+* build locally using [poetry](https://python-poetry.org/)
+
+```sh
+python -m pip install -U poetry
+poetry build
+```
+
+* download `.whl` from [PyPi](https://pypi.org/)
+
+```sh
+python -m pip download playhdl
+```
+
+Then you can use pip to install it on the offline machine:
+
+```sh
+python -m pip install <wheel_file_name>.whl
+```
+
+## Tool command guide
+
+To get general help and command list:
+
+```sh
+playhdl -h
+```
+
+To get help about specific command
+
+```sh
+playhdl <command> -h
+```
+
+### `setup` command
+
+Settings of the tool is stored in the JSON file under `$HOME/.playhdl` directory.
+
+To create `$HOME/.playhdl/settings.json` run
+
+```sh
+playhdl setup
+```
+
+It will try to find all supported simulators and fill the json. If you have multiple versions of simulators or some of them were not found, add them manually to your settings file.
+
+### `init` command
+
+### `run` command
+
+### `info` command
+
+## Developer guide
