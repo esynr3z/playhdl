@@ -9,7 +9,6 @@ playhdl = "playhdl.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-mypy = "^0.991"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
@@ -21,6 +20,7 @@ usort = "^1.0.5"
 flake8-annotations = "^2.9.1"
 flake8-type-checking = "^2.3.0"
 types-setuptools = "^65.6.0"
+mypy = "^0.991"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
