@@ -24,12 +24,6 @@ It supports various project types (HDL languages + libraries) and many simulator
 | [vcs](https://www.synopsys.com/verification/simulation/vcs.html) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
 | [vivado](https://www.xilinx.com/products/design-tools/vivado.html) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | |
 
-You can get an up-to-date table using a command below:
-
-```sh
-playhdl info
-```
-
 ## Quick start
 
 * Install the latest stable release (Python 3.8+ is required):
@@ -38,13 +32,13 @@ playhdl info
 python -m pip install -U playhdl
 ```
 
-* Setup settings file `$HOME/.playhdl/settings.json` with list of all automatically-discoverd simulators. Edit file manually to add undiscovered ones. This have to be done only once.
+* Setup settings file `$HOME/.playhdl/settings.json` with a list of all automatically-discoverd simulators. Edit file manually to add undiscovered ones. This have to be done only once.
 
 ```sh
 playhdl setup
 ```
 
-* Init project file `playhdl.json` and template testbench in the current directory. It contains specific commands to be executed for compilation and simulation processes. Edit it manually to tweak tool arguments if required.
+* Initialize project file `playhdl.json` and template testbench in the current directory. Project file contains specific commands to be executed for compilation and simulation processes. Edit it manually to tweak tool arguments if required.
 
 ```sh
 playhdl sv # this will create ready-to-simulate tb.sv
@@ -60,7 +54,7 @@ playhdl run icarus --waves
 
 ## Offline install
 
-For an offline install you have several options how to get `wheel`:
+For an offline install you have several options of how to get `wheel`:
 
 * build locally using [poetry](https://python-poetry.org/)
 
@@ -75,7 +69,7 @@ poetry build
 python -m pip download playhdl
 ```
 
-Then you can use pip to install it on the offline machine:
+Then you can use pip to install it on an offline machine:
 
 ```sh
 python -m pip install <wheel_file_name>.whl
@@ -97,7 +91,7 @@ playhdl <command> -h
 
 ### `setup` command
 
-Settings of the tool is stored in the JSON file under `$HOME/.playhdl` directory.
+Settings of the tool are stored in the JSON file under `$HOME/.playhdl` directory.
 
 To create `$HOME/.playhdl/settings.json` run
 
@@ -106,6 +100,44 @@ playhdl setup
 ```
 
 It will try to find all supported simulators and fill the json. If you have multiple versions of simulators or some of them were not found, add them manually to your settings file.
+
+Settings file structure:
+
+```json
+{
+    "tools": {
+        <tool_uid>: {
+            "kind": <tool_kind>,
+            "bin_dir": <path_to_bin>,
+            "env": {},
+            "extras": {}
+        }
+    }
+}
+```
+
+All tools settings are located in dictionary under `"tools"` key.
+
+Every tool has it is own `tool_uid`, which is just string with any unique name, e.g. `"modelsim"`, `"verilator5"`, `"my_secret_simulator"`.
+
+Valid `"kind"` must be provided:
+
+* `"modelsim"`
+* `"xcelium"`
+* `"verilator"`
+* `"icarus"`
+* `"vcs"`
+* `"vivado"`
+
+Other fields:
+
+* `"bin_dir"` - string with path to directory with executable files
+* `"env"` - dictionary with additional enviroment variables (keys and values are strings)
+* `"extras"` - dictionary with extra values for specific simulator kind
+
+Extras for `"vcs"` kind:
+
+* `"gui"` - `"verdi"` or `"dve"` select default GUI for VCS
 
 ### `init` command
 
