@@ -52,29 +52,6 @@ playhdl run icarus
 playhdl run icarus --waves
 ```
 
-## Offline install
-
-For an offline install you have several options of how to get `wheel`:
-
-* build locally using [poetry](https://python-poetry.org/)
-
-```sh
-python -m pip install -U poetry
-poetry build
-```
-
-* download `.whl` from [PyPi](https://pypi.org/)
-
-```sh
-python -m pip download playhdl
-```
-
-Then you can use pip to install it on an offline machine:
-
-```sh
-python -m pip install <wheel_file_name>.whl
-```
-
 ## Tool command guide
 
 To get general help and command list:
@@ -116,9 +93,9 @@ Settings file structure:
 }
 ```
 
-All tools settings are located in dictionary under `"tools"` key.
+All tools settings are located in a dictionary under `"tools"` key.
 
-Every tool has it is own `tool_uid`, which is just string with any unique name, e.g. `"modelsim"`, `"verilator5"`, `"my_secret_simulator"`.
+Every tool has it is own `tool_uid`, which is just a string with any unique name, e.g. `"modelsim"`, `"verilator5"`, `"my_secret_simulator"`.
 
 Valid `"kind"` must be provided:
 
@@ -131,9 +108,9 @@ Valid `"kind"` must be provided:
 
 Other fields:
 
-* `"bin_dir"` - string with path to directory with executable files
-* `"env"` - dictionary with additional enviroment variables (keys and values are strings)
-* `"extras"` - dictionary with extra values for specific simulator kind
+* `"bin_dir"` - a string with a path to a directory with executable files
+* `"env"` - a dictionary with additional enviroment variables (keys and values are strings)
+* `"extras"` - a dictionary with extra values for a specific simulator kind
 
 Extras for `"vcs"` kind:
 
@@ -141,8 +118,130 @@ Extras for `"vcs"` kind:
 
 ### `init` command
 
+This command creates JSON project file `playhdl.json` and HDL testbench in the current directory.
+
+```sh
+playhdl init <mode>
+```
+
+Where `<mode>` is one of the supported project modes:
+
+* `verilog` - Verilog-2001
+* `sv` - SystemVerilog-2017
+* `sv_uvm12` - SystemVerilog-2017 + UVM 1.2
+* `vhdl` - VHDL-93
+
+Project file is filled with scripts for all suitable simulators for the selected mode. It's internal structure:
+
+```json
+{
+    "tools": {
+        <tool_uid>: {
+            "build": [
+                <cmd0>,
+                <cmd1>,
+                <cmd2>
+            ],
+            "sim": [
+                <cmd>
+            ],
+            "waves": [
+                <cmd>
+            ]
+        }
+    }
+}
+```
+
+There are three categories of commands:
+
+* `"build"` - commands needed to compile and elaborate sources
+* `"sim"` - commands needed to run simulation
+* `"waves"` - commands needed to open waves for analysis
+
+Any command can be customized for specific needs.
+
 ### `run` command
+
+This command runs CLI-mode simulation in a specific simulator according to project file
+
+```sh
+playhdl run <tool_uid>
+```
+
+Argument `--waves` can be added to open waves for analysis after simulation ends
+
+```sh
+playhdl run <tool_uid> --waves
+```
 
 ### `info` command
 
+This command just prints some useful information:
+
+* all tools specified in your settings file
+* current compatibility table between project mode and simulator
+
+```sh
+playhdl info
+```
+
 ## Developer guide
+
+Install `poetry`
+
+```sh
+python -m pip install -U poetry
+```
+
+Setup virtual environment
+
+```sh
+make setup-dev
+```
+
+You can specify Python version to use
+
+```sh
+make setup-dev PYTHON_VERSION=3.9
+```
+
+To run `playhdl` from sources
+
+```sh
+poetry run playhdl <args>
+```
+
+`Makefile` provides additional ways to interact with project:
+
+* `make format` - auto-format all sources
+* `make check-format` - check current formatting of sources
+* `make lint` - perform linting
+* `make type` - perform type checking
+* `make test` - run all tests
+* `make pre-commit` - shorthand for combination of `check-format`, `lint`, `type`, `test`
+
+## Miscellaneous
+
+### Offline install
+
+For an offline install you have several options of how to get `wheel`:
+
+* build locally using [poetry](https://python-poetry.org/)
+
+```sh
+python -m pip install -U poetry
+poetry build
+```
+
+* download `.whl` from [PyPi](https://pypi.org/)
+
+```sh
+python -m pip download playhdl
+```
+
+Then you can use pip to install it on an offline machine:
+
+```sh
+python -m pip install <wheel_file_name>.whl
+```
