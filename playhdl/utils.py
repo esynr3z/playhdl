@@ -1,4 +1,3 @@
-import distutils
 import json
 from enum import Enum
 from pathlib import Path
@@ -55,8 +54,8 @@ def input_query_yes_no(question: str = "Do you want to proceed?") -> bool:
     _logger.warning(f"{question} [y/n]")
     while True:
         try:
-            return bool(distutils.util.strtobool(input().lower()))  # type: ignore
-        except ValueError:
+            return {"y": True, "n": False}[input().lower()]
+        except KeyError:
             _logger.error("Usupported answer! Please type y/yes or n/no.")
 
 
