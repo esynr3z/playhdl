@@ -83,9 +83,9 @@ Settings file structure:
 ```json
 {
     "tools": {
-        <tool_uid>: {
-            "kind": <tool_kind>,
-            "bin_dir": <path_to_bin>,
+        "<tool_uid>": {
+            "kind": "<tool_kind>",
+            "bin_dir": "<path_to_bin>",
             "env": {},
             "extras": {}
         }
@@ -136,17 +136,17 @@ Project file is filled with scripts for all suitable simulators for the selected
 ```json
 {
     "tools": {
-        <tool_uid>: {
+        "<tool_uid>": {
             "build": [
-                <cmd0>,
-                <cmd1>,
-                <cmd2>
+                "<cmd0>",
+                "<cmd1>",
+                "<cmd2>"
             ],
             "sim": [
-                <cmd>
+                "<cmd>"
             ],
             "waves": [
-                <cmd>
+                "<cmd>"
             ]
         }
     }
