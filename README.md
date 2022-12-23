@@ -44,7 +44,7 @@ playhdl setup
 * Initialize project file `playhdl.json` and template testbench in the current directory. Project file contains specific commands to be executed for compilation and simulation processes. Edit it manually to tweak tool arguments if required.
 
 ```sh
-playhdl sv # this will create ready-to-simulate tb.sv
+playhdl init sv # this will create ready-to-simulate tb.sv
 ```
 
 * Run simulation in one of the supported simulators for this project (language):
