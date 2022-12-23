@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "playhdl"
-version = "0.1.0"
+version = "0.2.0"
 description = "Tool to play with HDL (inspired by EdaPlayground)"
 authors = ["esynr3z <esynr3z@gmail.com>"]
 license = "MIT"
