@@ -1,5 +1,8 @@
 # playhdl
 
+[![Tests & Checks](https://github.com/esynr3z/playhdl/actions/workflows/test.yml/badge.svg)](https://github.com/esynr3z/playhdl/actions/workflows/test.yml)
+[![PyPI version](https://badge.fury.io/py/playhdl.svg)](https://badge.fury.io/py/playhdl)
+
 You can think about `playhdl` as [EdaPlayground](https://edaplayground.com/), but which is CLI-based and uses simulators on your local machine.
 
 It gives you ability to simulate tiny snippets of HDL code in several commands without any headache related to vast tool guides, command-line arguments and etc.:
